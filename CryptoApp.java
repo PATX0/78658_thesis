@@ -22,10 +22,15 @@ public class MainActivity extends AppCompatActivity {
                 String password = passwordEditText.getText().toString();
                 
                 if (!username.isEmpty() && !password.isEmpty()) {
-                    // TODO: Perform register logic here
-                    // For example, send the username and password to a server for verification
+                    // TODO: Register?
+                    // server verification?
 
-                    Toast.makeText(MainActivity.this, "User registered successfully!", Toast.LENGTH_SHORT).show();
+                    // Inflate the success message layout
+                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View successView = inflater.inflate(R.layout.success_message, container, false);
+
+                    // Add the success message view to the container
+                    container.addView(successView);
                 } else {
                     Toast.makeText(MainActivity.this, "Please enter both username and password!", Toast.LENGTH_SHORT).show();
                 }
