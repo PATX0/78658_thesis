@@ -1,0 +1,6 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/green_check_mark">
+    <target
+        android:name="check_mark"
+        android:animation="@anim/check_mark_animation"/>
+</animated-vector>
