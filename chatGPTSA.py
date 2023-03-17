@@ -3,7 +3,8 @@ import json
 import pandas as pd
 
 # Set up your OpenAI API key
-openai.api_key = "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"
+
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 # Read the CSV file containing the text reviews
 reviews_df = pd.read_csv("coinbase_reviews.csv")
