@@ -16,14 +16,14 @@ prompt_template = "sentiment analysis: {}"
 for review in reviews_df["Body"]:
     prompt = prompt_template.format(review)
     response = openai.Completion.create(
-        engine=model_engine,
+        model=model_engine,
         prompt=prompt,
-        max_tokens=1,
+        max_tokens=12,
         n=1,
         stop=None,
         temperature=0.5,
     )
-    result = json.loads(response.choices[0].text)
-    sentiment = result["label"]
-    confidence = result["confidence"]
-    print(f"The sentiment of '{review}' is {sentiment} with a confidence score of {confidence}.")
+    response_json = json.dumps(response)
+    result = json.loads(response_json)
+    sentiment = result["choices"][0]["text"].strip()
+    print(f"The sentiment of '{review}' is {sentiment} ") #with a confidence score of {confidence}.
