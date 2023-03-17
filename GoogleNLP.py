@@ -1,12 +1,20 @@
+import csv
 from google.cloud import language_v1
+from google.cloud.language_v1 import enums
 
+# Set up the Google Cloud Natural Language API client
 client = language_v1.LanguageServiceClient()
 
-text = "I love using the Google Cloud Natural Language API!"
+# Open the CSV file and read the Body column
+with open('binance_reviews.csv', newline='') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        text = row['Body']
 
-document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
+        # Perform sentiment analysis on the text
+        document = language_v1.Document(content=text, type_=enums.Document.Type.PLAIN_TEXT)
+        sentiment = client.analyze_sentiment(document=document).document_sentiment
 
-sentiment = client.analyze_sentiment(request={'document': document}).document_sentiment
-
-print(f"Sentiment score: {sentiment.score}")
-print(f"Sentiment magnitude: {sentiment.magnitude}")
+        # Print the sentiment score
+        print("Score: {}".format(sentiment.score))
+        print("Magnitude: {}".format(sentiment.magnitude))
