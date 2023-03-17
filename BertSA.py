@@ -1,18 +1,23 @@
-import transformers
 import pandas as pd
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-# Set up the Transformers API client
-client = transformers.pipeline(
-    "sentiment-analysis",
-    model="bert-base-cased",
-)
+# Load the BERT model and tokenizer
+model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-# Read the CSV file containing the text reviews
-reviews_df = pd.read_csv("reviews.csv")
+# Load the comments from a CSV file
+comments_df = pd.read_csv("binance_reviews.csv")
+comments = comments_df["Body"].tolist()
 
-# Iterate over the text reviews in the DataFrame and call the BERT model for each one
-for review in reviews_df["Body"]:
-    result = client(review)[0]
-    sentiment = result["label"]
-    score = result["score"]
-    print(f"The sentiment of '{review}' is {sentiment} with a score of {score}.")
+# Tokenize the comments
+inputs = tokenizer(comments, padding=True, truncation=True, return_tensors="pt")
+
+# Perform inference on the comments
+outputs = model(inputs["input_ids"], attention_mask=inputs["attention_mask"])
+predictions = outputs.logits.argmax(dim=-1).tolist()
+
+# Print the sentiment predictions for each comment
+for i, comment in enumerate(comments):
+    print(f"{i + 1}. {comment}\n   Sentiment: {predictions[i]}")
+
