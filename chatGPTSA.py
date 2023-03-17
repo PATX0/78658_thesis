@@ -3,10 +3,10 @@ import json
 import pandas as pd
 
 # Set up your OpenAI API key
-openai.api_key = "YOUR_API_KEY"
+openai.api_key = "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"
 
 # Read the CSV file containing the text reviews
-reviews_df = pd.read_csv("reviews.csv")
+reviews_df = pd.read_csv("coinbase_reviews.csv")
 
 # Define the parameters for the GPT-3 API call
 model_engine = "text-davinci-002"
