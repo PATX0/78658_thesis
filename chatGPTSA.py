@@ -1,6 +1,11 @@
 import openai
 import json
 import pandas as pd
+import csv
+import os
+import re
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Set up your OpenAI API key
 
@@ -14,7 +19,7 @@ model_engine = "text-davinci-002"
 prompt_template = "sentiment analysis: {}"
 
 # Iterate over the text reviews in the DataFrame and call the GPT-3 API for each one
-for review in reviews_df["Body"]:
+for review in reviews_df["Review"]:
     prompt = prompt_template.format(review)
     response = openai.Completion.create(
         model=model_engine,
