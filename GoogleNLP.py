@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+import string
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,13 +16,13 @@ import google.cloud.language_v1 as lang
 client = lang.LanguageServiceClient()
 
 # Define the sentiment categories
-SENTIMENT_CATEGORIES = {
-    "very negative": (-float("inf"), -0.5),
-    "negative": (-0.5, -0.1),
-    "neutral": (-0.1, 0.1),
-    "positive": (0.1, 0.5),
-    "very positive": (0.5, float("inf"))
-}
+#SENTIMENT_CATEGORIES = {
+#    "very negative": (-float("inf"), -0.5),
+#    "negative": (-0.5, -0.1),
+#    "neutral": (-0.1, 0.1),
+#    "positive": (0.1, 0.5),
+#    "very positive": (0.5, float("inf"))
+#}
 sentiment_counts = {
     'very negative': 0,
     'negative': 0,
@@ -29,13 +30,18 @@ sentiment_counts = {
     'very positive': 0
 }
 
-#regex = re.compile('[^a-zA-Z0-9]')
+#regex = re.compile('[^a-zA-Z0-9' + re.escape(string.punctuation) + ']')
 
-#Open the CSV file and read the Body column
-with open('coinbase_reviews_scrapped.csv',encoding='utf-8', newline='') as csvfile:
+#Open the CSV file and read the review column
+#LAST SCRAPPED at 23/03/2023
+with open('kucoin_reviews_1000.csv',encoding='utf-8', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        text = row['review']#.apply(lambda x: regex.sub('', x))
+        text = row['review']
+        #text = re.sub(r'[^a-zA-Z0-9\s]+', '', text)
+        text_test = re.sub(r'[^\w\s.,?!]+', '', text)
+        print(text_test)
+        #text = regex.sub(text_aux, '')
         # Perform sentiment analysis on the text
         document = lang.Document(content=text, type=lang.Document.Type.PLAIN_TEXT)
         sentiment = client.analyze_sentiment(document=document).document_sentiment
@@ -59,7 +65,11 @@ with open('coinbase_reviews_scrapped.csv',encoding='utf-8', newline='') as csvfi
         #print("Magnitude: {}".format(sentiment.magnitude))
 colors = ['red', 'orange', 'yellow', 'green']
 plt.bar(sentiment_counts.keys(), sentiment_counts.values(), color = colors)
-plt.title('Sentiment Analysis')
+plt.title('Sentiment Analysis Kucoin US 1000')
 plt.xlabel('Sentiment Category')
 plt.ylabel('Number of Comments')
+
+for index, value in enumerate(sentiment_counts.values()):
+    plt.annotate(str(value), xy=(index, value), ha='center', va='bottom')
+	
 plt.show()

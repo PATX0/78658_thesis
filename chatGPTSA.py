@@ -18,6 +18,9 @@ reviews_df = pd.read_csv("coinbase_reviews.csv")
 model_engine = "text-davinci-002"
 prompt_template = "sentiment analysis: {}"
 
+positive_count = 0
+negative_count = 0
+
 # Iterate over the text reviews in the DataFrame and call the GPT-3 API for each one
 for review in reviews_df["Review"]:
     prompt = prompt_template.format(review)
