@@ -51,8 +51,8 @@ def scrap_kucoin(country):
 
 for c in countries:
     binance = scrap_binance(c)
-    #coinbase = scrap_coinbase(c)
-    #kucoin = scrap_kucoin(c)
+    coinbase = scrap_coinbase(c)
+    kucoin = scrap_kucoin(c)
 #BINANCE
     filename = f'playstore_binance_reviews_{c}.csv'
     with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
@@ -66,27 +66,27 @@ for c in countries:
 
     print(f"CSV file '{filename}' has been created successfully.")
 #COINBASE
-    # filename = f'playstore_coinbase_reviews_{c}.csv'
-    # with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-    #     writer = csv.writer(csvfile)
-    #     writer.writerow(['timestamp', 'reviews'])
+    filename = f'playstore_coinbase_reviews_{c}.csv'
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['timestamp', 'reviews'])
 
-    #     for review in coinbase:
-    #         timestamp = review['at']
-    #         content = review['content']
-    #         writer.writerow([timestamp, content])
+        for review in coinbase:
+            timestamp = review['at']
+            content = review['content']
+            writer.writerow([timestamp, content])
 
-    # print(f"CSV file '{filename}' has been created successfully.")
+    print(f"CSV file '{filename}' has been created successfully.")
 #KUCOIN
-    # filename = f'playstore_kucoin_reviews_{c}.csv'
-    # with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-    #     writer = csv.writer(csvfile)
-    #     writer.writerow(['timestamp', 'reviews'])
+    filename = f'playstore_kucoin_reviews_{c}.csv'
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['timestamp', 'reviews'])
 
-    #     for review in kucoin:
-    #         timestamp = review['at']
-    #         content = review['content']
-    #         writer.writerow([timestamp, content])
+        for review in kucoin:
+            timestamp = review['at']
+            content = review['content']
+            writer.writerow([timestamp, content])
 
-    # print(f"CSV file '{filename}' has been created successfully.")
+    print(f"CSV file '{filename}' has been created successfully.")
 
