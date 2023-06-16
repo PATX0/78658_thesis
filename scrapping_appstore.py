@@ -1,8 +1,10 @@
 from app_store_scraper import AppStore
+from google_play_scraper import app
 import pandas as pd
 import numpy as np
+import csv
 import datetime
-
+import deepl
 
 #scrapping comments
 country_codes = {
@@ -13,7 +15,7 @@ country_codes = {
     'Brazil': 'BR'
 }
 countries = ['UA','NG','US','CN','BR']
-init_date= date = datetime.datetime(2017, 5, 1)
+init_date = date = datetime.datetime(2017, 5, 1)
 
 for c in countries:
     kucoin = AppStore(country=c, app_name='kucoin', app_id = '1378956601')
