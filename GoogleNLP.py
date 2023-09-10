@@ -5,7 +5,7 @@ import string
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import google.cloud.language_v1 as lang
+from google.cloud import language_v2 as lang
 
 #from google.oauth2.credentials import Credentials
 
@@ -34,7 +34,7 @@ sentiment_counts = {
 
 #Open the CSV file and read the review column
 #LAST SCRAPPED at 23/03/2023
-with open('kucoin_reviews_1000.csv',encoding='utf-8', newline='') as csvfile:
+with open('appstore_kucoin_reviews_BR.csv',encoding='utf-8', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         text = row['review']
