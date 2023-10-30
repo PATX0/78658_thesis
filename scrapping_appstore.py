@@ -1,5 +1,4 @@
 from app_store_scraper import AppStore
-from google_play_scraper import app
 import pandas as pd
 import numpy as np
 import csv
@@ -18,20 +17,21 @@ countries = ['UA','NG','US','CN','BR']
 init_date = date = datetime.datetime(2017, 5, 1)
 
 for c in countries:
+    #KUCOIN
     kucoin = AppStore(country=c, app_name='kucoin', app_id = '1378956601')
     kucoin.review(how_many = 15000, after=init_date)
     kucoindf = pd.DataFrame(np.array(kucoin.reviews),columns=['review'])
     kucoindf2 = kucoindf.join(pd.DataFrame(kucoindf.pop('review').tolist()))
     print(f'kucoin_reviews_{c}.csv')
     kucoindf2.to_csv(f'appstore_kucoin_reviews_{c}.csv', index=False)
-
+    #COINBASE
     coinbase = AppStore(country=c, app_name='coinbase', app_id = '886427730')
     coinbase.review(how_many=15000)
     coinbasedf = pd.DataFrame(np.array(coinbase.reviews),columns=['review'])
     coinbasedf2 = coinbasedf.join(pd.DataFrame(coinbasedf.pop('review').tolist()))
     coinbasedf2.to_csv(f'appstore_coinbase_reviews_{c}.csv', index=False)
-
-    binance = AppStore(country=c, app_name='binance', app_id = '886427730')
+    #BINANCE
+    binance = AppStore(country=c, app_name='binance', app_id = '1436799971')
     binance.review(how_many=15000)
     binancedf = pd.DataFrame(np.array(binance.reviews),columns=['review'])
     binancedf2 = binancedf.join(pd.DataFrame(binancedf.pop('review').tolist()))

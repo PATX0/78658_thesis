@@ -1,4 +1,4 @@
-date,review,rating,isEdited,title,userName
+timestamp,reviews,rating,isEdited,title,userName
 2022-01-27 06:45:59,Usem meu código: rBZ3PW6,5,False,Bom App,VictoriaFemboy
 2022-04-11 16:30:14,Usem meu código para ganhar prêmios rP88J62,5,False,Bom app,nvmnt
 2023-04-26 00:46:48,Código exclusivo:  rMYN6NY,5,False,Aproveite o desconto nas taxas  usando meu código: rMYN6NY,Hildemarmoreira
