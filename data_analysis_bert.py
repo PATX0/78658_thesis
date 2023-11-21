@@ -24,7 +24,7 @@ nlp = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
 # Apply sentiment analysis to the entire reviews column
 df['sentiment'] = df['reviews'].apply(lambda x: nlp(x)[0]['label'])
 
-# Map the numerical ratings to descriptive labels
+# Map the numerical ratings to descriptive labels ( 'X stars' is the format of the output given by the model)
 sentiment_map = {
     '1 star': 'very_bad',
     '2 stars': 'bad',

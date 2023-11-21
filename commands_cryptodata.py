@@ -5,9 +5,7 @@ import schedule
 import datetime
 
 CC_API_KEY = '825ed1c29fd024a7f04bddb228d707c78372516c3f651051e0328f7ccfcab1f1'
-ts=1685398634 #seconds passed since 01/01/1970
-formatted_time = datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
-print(formatted_time)
+
 
 def get_trending_coins_by_volume():
     url = 'https://min-api.cryptocompare.com/data/top/totaltoptiervolfull?api_key={CC_API_KEY}'
