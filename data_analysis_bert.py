@@ -3,11 +3,22 @@ from transformers import BertTokenizer, BertForSequenceClassification, pipeline
 import matplotlib.pyplot as plt
 
 # Load the data
-dfB = pd.read_csv('playstore_binance_reviews_BR.csv')
-dfC = pd.read_csv('playstore_coinbase_reviews_BR.csv')
-dfK = pd.read_csv('playstore_kucoin_reviews_BR.csv')
+#Playstore
+dfBP = pd.read_csv('csvs/playstore/playstore_binance_reviews_NG.csv')
+dfCP = pd.read_csv('csvs/playstore/playstore_coinbase_reviews_NG.csv')
+dfKP = pd.read_csv('csvs/playstore/playstore_kucoin_reviews_NG.csv')
+#Appstore
+dfBA = pd.read_csv('csvs/appstore/appstore_binance_reviews_NG.csv')
+dfCA = pd.read_csv('csvs/appstore/appstore_coinbase_reviews_NG.csv')
+dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_NG.csv')
 
-df = dfC.dropna(subset=['reviews'])
+#df = dfCP.dropna(subset=['reviews'])
+#df = dfKP.dropna(subset=['reviews'])
+#df = dfBA.dropna(subset=['reviews'])
+#df = dfCA.dropna(subset=['reviews'])
+#df = dfKA.dropna(subset=['reviews'])
+
+df = dfCP.dropna(subset=['reviews'])
 df = df[df['reviews'].apply(lambda x: isinstance(x, str))]
 if 'title' in df.columns:
     df = df.drop(columns =['isEdited','title','userName'])
@@ -36,4 +47,6 @@ sentiment_map = {
 df['sentiment'] = df['sentiment'].map(sentiment_map)
 
 # Save the results back to a new CSV
-df.to_csv('PS_Coinbase_BR_bert.csv', index=False)
+df.to_csv('PS_Coinbase_NG_bert.csv', index=False)
+#df.to_csv('PS_Coinbase_NG_bert.csv', index=False)
+#df.to_csv('PS_Kucoin_NG_bert.csv', index=False)

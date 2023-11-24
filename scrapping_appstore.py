@@ -22,7 +22,6 @@ for c in countries:
     kucoin.review(how_many = 15000, after=init_date)
     kucoindf = pd.DataFrame(np.array(kucoin.reviews),columns=['review'])
     kucoindf2 = kucoindf.join(pd.DataFrame(kucoindf.pop('review').tolist()))
-    print(f'kucoin_reviews_{c}.csv')
     kucoindf2.to_csv(f'appstore_kucoin_reviews_{c}.csv', index=False)
     #COINBASE
     coinbase = AppStore(country=c, app_name='coinbase', app_id = '886427730')
