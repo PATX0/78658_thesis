@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 
 # Load the data
 #Playstore
-dfBP = pd.read_csv('csvs/playstore/playstore_binance_reviews_NG.csv')
-dfCP = pd.read_csv('csvs/playstore/playstore_coinbase_reviews_NG.csv')
-dfKP = pd.read_csv('csvs/playstore/playstore_kucoin_reviews_NG.csv')
+dfBP = pd.read_csv('csvs/playstore/playstore_binance_reviews_US.csv')
+dfCP = pd.read_csv('csvs/playstore/playstore_coinbase_reviews_US.csv')
+dfKP = pd.read_csv('csvs/playstore/playstore_kucoin_reviews_US.csv')
 #Appstore
 dfBA = pd.read_csv('csvs/appstore/appstore_binance_reviews_NG.csv')
 dfCA = pd.read_csv('csvs/appstore/appstore_coinbase_reviews_NG.csv')
@@ -18,7 +18,7 @@ dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_NG.csv')
 #df = dfCA.dropna(subset=['reviews'])
 #df = dfKA.dropna(subset=['reviews'])
 
-df = dfCP.dropna(subset=['reviews'])
+df = dfKP.dropna(subset=['reviews'])
 df = df[df['reviews'].apply(lambda x: isinstance(x, str))]
 if 'title' in df.columns:
     df = df.drop(columns =['isEdited','title','userName'])
@@ -47,6 +47,6 @@ sentiment_map = {
 df['sentiment'] = df['sentiment'].map(sentiment_map)
 
 # Save the results back to a new CSV
-df.to_csv('PS_Coinbase_NG_bert.csv', index=False)
-#df.to_csv('PS_Coinbase_NG_bert.csv', index=False)
-#df.to_csv('PS_Kucoin_NG_bert.csv', index=False)
+#df.to_csv('PS_Binance_CN_bert.csv', index=False)
+#df.to_csv('PS_Coinbase_CN_bert.csv', index=False)
+df.to_csv('PS_Kucoin_US_bert.csv', index=False)
