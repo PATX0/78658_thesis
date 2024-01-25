@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
 
+### APPSTORE REVIEWS HAVE A USER RATING, WE CAN COMPARE IT WITH THE SENTIMENT SCORE
+### PLAYSTORE DOESNT HAVE IT
+
 dfA_BR_binance = pd.read_csv('csvs/appstore/binance/AS_Binance_BR_bert.csv')
 dfP_BR_binance = pd.read_csv('csvs/playstore/binance/PS_Binance_BR_bert.csv')
 dfA_BR_coinbase = pd.read_csv('csvs/appstore/coinbase/AS_Coinbase_BR_bert.csv')
@@ -29,12 +32,20 @@ def display_sentiment_counts(csv):
     y_values = sentiment_counts.values.tolist()
 
     # Plotting the bar chart
+ # Plotting the bar chart
     plt.figure(figsize=(10,6))
-    plt.bar(x_values, y_values, color=colors)
+    bars = plt.bar(x_values, y_values, color=colors)
     plt.title("Sentiment Distribution - Bar Chart")
     plt.ylabel('Number of Reviews')
     plt.xlabel('Sentiment')
     plt.grid(axis='y')
+
+
+    # Annotate the count above each bar
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, yval, int(yval), ha='center', va='bottom')
+
     plt.tight_layout()
     plt.show()
 
@@ -76,6 +87,30 @@ def crosscheck_btc(df_sentiment):
 
     plt.show()
 
+def compare_score_vs_rating(df): ### ONLY WORKS WITH APPSTORE     
+    # Map the sentiment to numerical scores
+    sentiment_mapping = {
+        'very_bad': 1,
+        'bad': 2,
+        'neutral': 3,
+        'good': 4,
+        'very_good': 5
+    }
+    df['sentiment_score'] = df['sentiment'].map(sentiment_mapping)
+    
+    # Group data by rating and calculate average sentiment score for each rating
+    grouped_by_rating = df.groupby('rating')['sentiment_score'].mean()
 
+    # Create a scatter plot with a trend line
+    plt.figure(figsize=(10, 6))
+    sns.regplot(x=grouped_by_rating.index, y=grouped_by_rating.values, scatter_kws={'s': 100}, color='darkblue')
+    plt.title('Average Sentiment Score by User Rating')
+    plt.xlabel('User Rating')
+    plt.ylabel('Average Sentiment Score')
+    plt.grid(True)
+    plt.show()
+
+
+compare_score_vs_rating(dfA_BR_binance)
+display_sentiment_counts(dfP_US_binance)
 crosscheck_btc(dfP_US_binance)
-
