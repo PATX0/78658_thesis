@@ -18,13 +18,15 @@ dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_US.csv')
 #df = dfCA.dropna(subset=['reviews'])
 #df = dfKA.dropna(subset=['reviews'])
 
-df = dfKA.dropna(subset=['reviews'])
+df = dfBP.dropna(subset=['reviews'])
 df = df[df['reviews'].apply(lambda x: isinstance(x, str))]
-if 'title' in df.columns:
+
+
+""" if 'title' in df.columns:   ###APPLY ONLY IN APPSTORE
     df = df.drop(columns =['isEdited','title','userName'])
 if 'developerResponse' in df.columns:
     df = df.drop(columns=['developerResponse'])
-
+ """
 max_sequence_length = 512  # Maximum sequence length
 
 # Iterate through each row and drop rows with review text length exceeding the limit of BERT (512)
@@ -56,7 +58,7 @@ df['sentiment'] = df['sentiment'].map(sentiment_map)
 # Save the results back to a new CSV
 #df.to_csv('PS_Binance_CN_bert.csv', index=False)
 #df.to_csv('PS_Coinbase_CN_bert.csv', index=False)
-df.to_csv('AS_Kucoin_US_bert.csv', index=False)
+df.to_csv('PS_Binance_US_bert.csv', index=False)
 
 
 

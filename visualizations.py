@@ -13,12 +13,12 @@ dfP_BR_coinbase = pd.read_csv('csvs/playstore/coinbase/PS_Coinbase_BR_bert.csv')
 dfA_BR_kucoin = pd.read_csv('csvs/appstore/kucoin/AS_Kucoin_BR_bert.csv')
 dfP_BR_kucoin = pd.read_csv('csvs/playstore/kucoin/PS_Kucoin_BR_bert.csv')
 
-dfA_US_binance = pd.read_csv('csvs/appstore/binance/AS_Binance_US.csv')
-dfP_US_binance = pd.read_csv('csvs/playstore/binance/PS_Binance_US.csv')
-dfA_US_coinbase = pd.read_csv('csvs/appstore/coinbase/AS_Coinbase_US.csv')
-dfP_US_coinbase = pd.read_csv('csvs/playstore/coinbase/PS_Coinbase_US.csv')
-dfA_US_kucoin = pd.read_csv('csvs/appstore/kucoin/AS_Kucoin_US.csv')
-dfP_US_kucoin = pd.read_csv('csvs/playstore/kucoin/PS_Kucoin_US.csv')
+dfA_US_binance = pd.read_csv('csvs/appstore/binance/AS_Binance_US_bert.csv')
+dfP_US_binance = pd.read_csv('csvs/playstore/binance/PS_Binance_US_bert.csv')
+dfA_US_coinbase = pd.read_csv('csvs/appstore/coinbase/AS_Coinbase_US_bert.csv')
+dfP_US_coinbase = pd.read_csv('csvs/playstore/coinbase/PS_Coinbase_US_bert.csv')
+dfA_US_kucoin = pd.read_csv('csvs/appstore/kucoin/AS_Kucoin_US_bert.csv')
+dfP_US_kucoin = pd.read_csv('csvs/playstore/kucoin/PS_Kucoin_US_bert.csv')
 
 def display_sentiment_counts(csv):
     # Calculate the count of each sentiment label in the 'sentiment' column
@@ -114,3 +114,40 @@ def compare_score_vs_rating(df): ### ONLY WORKS WITH APPSTORE
 compare_score_vs_rating(dfA_BR_binance)
 display_sentiment_counts(dfP_US_binance)
 crosscheck_btc(dfP_US_binance)
+
+
+# Function to plot sentiment distribution
+def plot_sentiment_distribution(data, title):
+    plt.figure(figsize=(8, 4))
+    sns.countplot(data['sentiment'])
+    plt.title(f'Sentiment Distribution for {title}')
+    plt.xlabel('Sentiment Score')
+    plt.ylabel('Count')
+    plt.show()
+
+# Function to plot sentiment over time
+def plot_sentiment_over_time(data, title):
+    # Convert timestamp to datetime
+    data['timestamp'] = pd.to_datetime(data['timestamp'])
+    data = data.sort_values(by='timestamp')
+
+    # Resampling to monthly average sentiment
+    monthly_sentiment = data.resample('M', on='timestamp').mean()
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(monthly_sentiment.index, monthly_sentiment['sentiment'], marker='o')
+    plt.title(f'Monthly Average Sentiment Over Time for {title}')
+    plt.xlabel('Time')
+    plt.ylabel('Average Sentiment')
+    plt.show()
+
+# Plotting for each dataset
+
+plot_sentiment_distribution(dfP_US_binance, "Binance")
+plot_sentiment_over_time(dfP_US_binance, "Binance")
+
+plot_sentiment_distribution(dfP_US_coinbase, "Coinbase")
+plot_sentiment_over_time(dfP_US_coinbase, "Coinbase")
+
+plot_sentiment_distribution(dfP_US_kucoin, "Kucoin")
+plot_sentiment_over_time(dfP_US_kucoin, "Kucoin")
