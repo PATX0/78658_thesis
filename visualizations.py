@@ -49,7 +49,6 @@ def display_sentiment_counts(csv):
     plt.tight_layout()
     plt.show()
 
-
 def crosscheck_btc(df_sentiment):
 
     # Load the sentiment data
@@ -114,7 +113,7 @@ def compare_score_vs_rating(df): ### ONLY WORKS WITH APPSTORE
 compare_score_vs_rating(dfA_BR_binance)
 display_sentiment_counts(dfP_US_binance)
 crosscheck_btc(dfP_US_binance)
-
+####################################################################################################################################################################################################################################
 
 # Function to plot sentiment distribution
 def plot_sentiment_distribution(data, title):
@@ -151,3 +150,68 @@ plot_sentiment_over_time(dfP_US_coinbase, "Coinbase")
 
 plot_sentiment_distribution(dfP_US_kucoin, "Kucoin")
 plot_sentiment_over_time(dfP_US_kucoin, "Kucoin")
+
+
+####################################################################################################################################################################################################################################
+
+
+def plot_average_monthly_sentiment(df):
+    """
+    Plot the average monthly sentiment for a given dataset.
+    """
+    # Resample data to a monthly basis
+    monthly = df.resample('M', on='timestamp').mean()
+
+    # Plotting
+    plt.plot(monthly.index, monthly['sentiment'], label=df.name)
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+    plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+    plt.xticks(rotation=45)
+    plt.ylabel('Average Sentiment')
+    plt.title(f'Average Monthly Sentiment for {df.name}')
+# Assigning names to the dataframes for labeling purposes
+dfP_US_binance.name = 'Binance'
+dfP_US_coinbase.name = 'Coinbase'
+dfP_US_kucoin.name = 'Kucoin'
+# Plotting Density Plot Sentiment Distribution for each platform
+plt.figure(figsize=(15, 5))
+plot_average_monthly_sentiment(dfP_US_binance)
+plot_average_monthly_sentiment(dfP_US_coinbase)
+plot_average_monthly_sentiment(dfP_US_kucoin)
+plt.legend()
+plt.show()
+
+#Average Monthly Sentiment: The first plot shows the average monthly sentiment for Binance (blue), Coinbase (green), and Kucoin (red). This graph provides insight into how user sentiment fluctuates over time on each platform. 
+#Trends, seasonal patterns, or any significant changes in sentiment over the months can be observed.
+#Sentiment Score Distribution Across Platforms: The second plot is a set of box plots comparing the distribution of sentiment scores across Binance, Coinbase, and Kucoin. 
+#This visualization helps to understand the range, median, and variability of sentiment scores on each platform. 
+#It's useful for identifying differences in user sentiment across these platforms, such as which platform tends to have more positive or negative reviews.
+#These analyses give a clearer picture of the sentiment dynamics and can be used to draw insights about user experiences and perceptions on each cryptocurrency trading platform
+####################################################################################################################################################################################################################################
+
+
+def plot_density_sentiment_distribution(df):
+    """
+    Plot a density plot for sentiment distribution of a given dataset.
+    """
+    sns.kdeplot(df['sentiment'], label=df.name, fill=True)
+    plt.xlabel('Sentiment Score')
+    plt.ylabel('Density')
+    plt.title(f'Sentiment Score Density Distribution for {df.name}')
+    
+
+plt.figure(figsize=(15, 5))
+plot_density_sentiment_distribution(dfP_US_binance)
+plot_density_sentiment_distribution(dfP_US_coinbase)
+plot_density_sentiment_distribution(dfP_US_kucoin)
+plt.legend()
+plt.show()
+
+#Here's the density plot visualizing the sentiment score distributions for Binance, Coinbase, and Kucoin:
+
+#Each curve represents the density distribution of sentiment scores for one of the platforms.
+#The x-axis shows the sentiment scores, while the y-axis represents the density (probability distribution).
+#The area under each curve indicates the frequency of sentiment scores within that range.
+#This visualization provides a smooth and continuous view of how sentiment scores are spread out for each platform, allowing you to compare the distributions directly. 
+#It's particularly useful for identifying the most common sentiment scores and seeing how tightly or widely they are distributed on each platform
+####################################################################################################################################################################################################################################
