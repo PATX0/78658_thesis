@@ -20,10 +20,12 @@ dfP_US_coinbase = pd.read_csv('csvs/playstore/coinbase/PS_Coinbase_US_bert.csv')
 dfA_US_kucoin = pd.read_csv('csvs/appstore/kucoin/AS_Kucoin_US_bert.csv')
 dfP_US_kucoin = pd.read_csv('csvs/playstore/kucoin/PS_Kucoin_US_bert.csv')
 
+###########
 def display_sentiment_counts(csv):
     # Calculate the count of each sentiment label in the 'sentiment' column
     sentiment_counts = csv['sentiment'].value_counts()
-
+    #sentiment_mapping = {'very_bad': 1, 'bad': 2, 'neutral': 3, 'good': 4, 'very_good': 5}
+    #df_sentiment['sentiment'] = df_sentiment['sentiment'].map(sentiment_mapping)
 
     # Plotting the bar chart
     colors = ['darkgreen', 'lightgreen', 'yellow', 'orange', 'red']
@@ -54,8 +56,6 @@ def crosscheck_btc(df_sentiment):
     # Load the sentiment data
     df_sentiment['timestamp'] = pd.to_datetime(df_sentiment['timestamp'])
     df_sentiment['year_month'] = df_sentiment['timestamp'].dt.to_period('M')
-    sentiment_mapping = {'very_bad': 1, 'bad': 2, 'neutral': 3, 'good': 4, 'very_good': 5}
-    df_sentiment['sentiment'] = df_sentiment['sentiment'].map(sentiment_mapping)
     df_sentiment_monthly = df_sentiment.groupby('year_month')['sentiment'].mean().reset_index()
 
     # Load the BTC/USD data
@@ -88,17 +88,9 @@ def crosscheck_btc(df_sentiment):
 
 def compare_score_vs_rating(df): ### ONLY WORKS WITH APPSTORE     
     # Map the sentiment to numerical scores
-    sentiment_mapping = {
-        'very_bad': 1,
-        'bad': 2,
-        'neutral': 3,
-        'good': 4,
-        'very_good': 5
-    }
-    df['sentiment_score'] = df['sentiment'].map(sentiment_mapping)
     
     # Group data by rating and calculate average sentiment score for each rating
-    grouped_by_rating = df.groupby('rating')['sentiment_score'].mean()
+    grouped_by_rating = df.groupby('rating')['sentiment'].mean()
 
     # Create a scatter plot with a trend line
     plt.figure(figsize=(10, 6))
@@ -110,7 +102,7 @@ def compare_score_vs_rating(df): ### ONLY WORKS WITH APPSTORE
     plt.show()
 
 
-compare_score_vs_rating(dfA_BR_binance)
+compare_score_vs_rating(dfA_US_binance)
 display_sentiment_counts(dfP_US_binance)
 crosscheck_btc(dfP_US_binance)
 ####################################################################################################################################################################################################################################
@@ -214,4 +206,58 @@ plt.show()
 #The area under each curve indicates the frequency of sentiment scores within that range.
 #This visualization provides a smooth and continuous view of how sentiment scores are spread out for each platform, allowing you to compare the distributions directly. 
 #It's particularly useful for identifying the most common sentiment scores and seeing how tightly or widely they are distributed on each platform
-####################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################
+
+#####DONE WITH SEABORN
+
+# Function to prepare data for average monthly sentiment analysis
+def prepare_monthly_sentiment_data(df, platform_name):
+    # 'timestamp' needs to be in datetime format
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    # Set 'timestamp' as the index for search purposes
+    df = df.set_index('timestamp')
+    # Resample and calculate the mean of the 'sentiment' column only
+    df_monthly = df[['sentiment']].resample('M').mean().reset_index()
+    df_monthly['Platform'] = platform_name
+    return df_monthly
+
+def visualize_sentiment_exchanges(binance_df, coinbase_df, kucoin_df):
+    # Pantone color assignments
+    pantone_colors = {
+        'Binance': '#FE5000',  # Pantone Orange C
+        'Coinbase': '#002395',  # Pantone Blue 072 C
+        'Kucoin': '#00AB84',  # Pantone Green C
+    }
+
+    # Preparing monthly sentiment data for each platform
+    binance_monthly = prepare_monthly_sentiment_data(binance_df, 'Binance')
+    coinbase_monthly = prepare_monthly_sentiment_data(coinbase_df, 'Coinbase')
+    kucoin_monthly = prepare_monthly_sentiment_data(kucoin_df, 'Kucoin')
+
+    # Combining data
+    combined_monthly = pd.concat([binance_monthly, coinbase_monthly, kucoin_monthly])
+
+    # Average Monthly Sentiment Line Plot
+    plt.figure(figsize=(15, 5))
+    sns.lineplot(data=combined_monthly, x='timestamp', y='sentiment', hue='Platform', 
+                 palette=pantone_colors, style='Platform')
+    plt.title('Average Monthly Sentiment Analysis')
+    plt.xlabel('Month')
+    plt.ylabel('Average Sentiment')
+    plt.xticks(rotation=45)
+    plt.legend(title='Platform')
+    plt.show()
+
+    # Sentiment Score Density Plot
+    plt.figure(figsize=(15, 5))
+    sns.kdeplot(binance_df['sentiment'], color='#FE5000', label='Binance', fill=True)
+    sns.kdeplot(coinbase_df['sentiment'], color='#002395', label='Coinbase', fill=True)
+    sns.kdeplot(kucoin_df['sentiment'], color='#00AB84', label='Kucoin', fill=True)
+    plt.title('Density Plot of Sentiment Scores Across Platforms')
+    plt.xlabel('Sentiment Score')
+    plt.ylabel('Density')
+    plt.legend(title='Platform')
+    plt.show()
+
+# Call the function with the loaded and processed datasets
+visualize_sentiment_exchanges(dfP_US_binance, dfP_US_coinbase, dfP_US_kucoin)
