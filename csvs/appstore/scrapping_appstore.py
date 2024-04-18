@@ -14,9 +14,10 @@ country_codes = {
     'Brazil': 'BR'
 }
 countries = ['UA','NG','US','CN','BR']
+countries1 = ['GB', 'IN']
 init_date = date = datetime.datetime(2017, 5, 1)
 
-for c in countries:
+for c in countries1:
     #KUCOIN
     kucoin = AppStore(country=c, app_name='kucoin', app_id = '1378956601')
     kucoin.review(how_many = 15000, after=init_date)
@@ -35,9 +36,3 @@ for c in countries:
     binancedf = pd.DataFrame(np.array(binance.reviews),columns=['review'])
     binancedf2 = binancedf.join(pd.DataFrame(binancedf.pop('review').tolist()))
     binancedf2.to_csv(f'appstore_binance_reviews_{c}.csv', index=False)
-
-    # revolut = AppStore(country=c, app_name='revolut', app_id = '886427730')
-    # revolut.review(how_many=1000)
-    # revolutdf = pd.DataFrame(np.array(revolut.reviews),columns=['review'])
-    # revolutdf2 = revolutdf.join(pd.DataFrame(revolutdf.pop('review').tolist()))
-    # revolutdf2.to_csv(f'revolut_reviews_{c}.csv', index=False)

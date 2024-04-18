@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 from datetime import datetime
 
+
+#Fetch OHLCV data from the BTC/USD pair since 2017
 def fetch_ohlcv_data(symbol, comparison_symbol, limit, aggregate, timestamp):
     url = 'https://min-api.cryptocompare.com/data/v2/histoday'
     params = {
@@ -15,6 +17,19 @@ def fetch_ohlcv_data(symbol, comparison_symbol, limit, aggregate, timestamp):
     response = requests.get(url, params=params)
     data = response.json()['Data']['Data']
     return data
+
+#Cleaning BTC_USD_daily_price.csv to only have timestamp, closingPrice(close), and volumeto (USD)   
+def filter_BTC():
+    # Load the dataset
+    btc = pd.read_csv('csvs/btc_usd_ohlcv.csv')
+    
+    # Keep only the specified columns
+    to_keep = ['time', 'volumeto', 'close']
+    new = btc[to_keep]
+    
+    # Save the filtered dataframe to a new CSV file
+    new.to_csv('csvs/BTC_daily_pricevol.csv', index=False)
+
 
 def main():
     symbol = 'BTC'
@@ -40,5 +55,9 @@ def main():
     df = pd.DataFrame(all_data)
     df['time'] = pd.to_datetime(df['time'], unit='s')  # Convert timestamp to datetime
     df.to_csv('btc_usd_ohlcv.csv', index=False)
-    print('Data saved to btc_usd_ohlcv.csv')
+    #print('Data saved to btc_usd_ohlcv.csv')
+    
+    filter_BTC()
 
+if __name__ == '__main__':
+    main()

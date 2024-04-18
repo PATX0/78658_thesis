@@ -10,11 +10,13 @@ lang_codes = {
     'NG': 'en',
     'US': 'en',
     'CN': 'zh',
-    'BR': 'pt'
+    'BR': 'pt',
+    'GB': 'en',
+    'IN': 'en'
 }
 
 countries = ['UA','NG','US','CN','BR']
-
+countries1 = ['GB', 'IN']
 def scrap_coinbase(country):
     #coinbase
     coinbase = reviews_all(
@@ -49,7 +51,7 @@ def scrap_kucoin(country):
     return kucoin
      
 
-for c in countries:
+for c in countries1:
     binance = scrap_binance(c)
     coinbase = scrap_coinbase(c)
     kucoin = scrap_kucoin(c)

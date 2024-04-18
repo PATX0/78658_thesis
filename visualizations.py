@@ -222,11 +222,11 @@ def prepare_monthly_sentiment_data(df, platform_name):
     return df_monthly
 
 def visualize_sentiment_exchanges(binance_df, coinbase_df, kucoin_df):
-    # Pantone color assignments
+    # Color assignments
     pantone_colors = {
-        'Binance': '#FE5000',  # Pantone Orange C
-        'Coinbase': '#002395',  # Pantone Blue 072 C
-        'Kucoin': '#00AB84',  # Pantone Green C
+        'Binance': '#FE5000',  #  Orange 
+        'Coinbase': '#002395',  # Blue
+        'Kucoin': '#00AB84',  # Green
     }
 
     # Preparing monthly sentiment data for each platform
