@@ -4,13 +4,13 @@ from datetime import datetime
 
 
 #Fetch OHLCV data from the BTC/USD pair since 2017
-def fetch_ohlcv_data(symbol, comparison_symbol, limit, aggregate, timestamp):
+def fetch_ohlcv_data(timestamp):
     url = 'https://min-api.cryptocompare.com/data/v2/histoday'
     params = {
-        'fsym': symbol,
-        'tsym': comparison_symbol,
-        'limit': limit,
-        'aggregate': aggregate,
+        'fsym': 'BTC',
+        'tsym': 'USD',
+        'limit': 2000,
+        'aggregate': 1,
         'toTs': timestamp
         #'api_key': CC_API_KEY
     }
@@ -31,33 +31,28 @@ def filter_BTC():
     new.to_csv('csvs/BTC_daily_pricevol.csv', index=False)
 
 
-def main():
-    symbol = 'BTC'
-    comparison_symbol = 'USD'
-    aggregate = 1  # 1 day
-    limit = 2000   # max limit
 
-    # Start from the most recent day and go backwards
-    end_timestamp = int(datetime.now().timestamp())
+#Run the functions with the appropriate input
 
-    all_data = []
-    while True:
-        data = fetch_ohlcv_data(symbol, comparison_symbol, limit, aggregate, end_timestamp)
-        if not data:
-            break
-        all_data.extend(data)
-        # Update the timestamp to the earliest date in the fetched data
-        end_timestamp = data[0]['time']
-        # Stop if the data reaches 2017 or earlier
-        if datetime.fromtimestamp(end_timestamp).year <= 2017:
-            break
+# Start from the last day of 2023
+end_timestamp = int(datetime(2023, 12, 31).timestamp())
 
-    df = pd.DataFrame(all_data)
-    df['time'] = pd.to_datetime(df['time'], unit='s')  # Convert timestamp to datetime
-    df.to_csv('btc_usd_ohlcv.csv', index=False)
-    #print('Data saved to btc_usd_ohlcv.csv')
-    
-    filter_BTC()
+all_data = []
+while True:
+    data = fetch_ohlcv_data(end_timestamp)
+    if not data:
+        break
+    all_data.extend(data)
+    # Update the timestamp to the earliest date in the fetched data
+    end_timestamp = data[0]['time']
+    # Stop if the data reaches the first day of 2017
+    if datetime.fromtimestamp(end_timestamp).year <= 2017:
+        break
 
-if __name__ == '__main__':
-    main()
+df = pd.DataFrame(all_data)
+df['time'] = pd.to_datetime(df['time'], unit='s')  # Convert timestamp to datetime
+df.to_csv('btc_usd_ohlcv.csv', index=False)
+#print('Data saved to btc_usd_ohlcv.csv')
+
+#run after the original BTC csv is 
+filter_BTC()
