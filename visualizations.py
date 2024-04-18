@@ -59,7 +59,7 @@ def crosscheck_btc(df_sentiment):
     df_sentiment_monthly = df_sentiment.groupby('year_month')['sentiment'].mean().reset_index()
 
     # Load the BTC/USD data
-    dfBTC = pd.read_csv('csvs/BTCUSD_daily_price.csv')
+    dfBTC = pd.read_csv('csvs/BTC_daily_pricevol.csv')
     dfBTC['timestamp'] = pd.to_datetime(dfBTC['timestamp'])
     dfBTC['year_month'] = dfBTC['timestamp'].dt.to_period('M')
     dfBTC_monthly = dfBTC.groupby('year_month')['price'].mean().reset_index()
