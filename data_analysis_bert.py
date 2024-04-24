@@ -9,8 +9,8 @@ dfCP = pd.read_csv('csvs/playstore/playstore_coinbase_reviews_NG.csv')
 dfKP = pd.read_csv('csvs/playstore/playstore_kucoin_reviews_NG.csv')
 #Appstore
 dfBA = pd.read_csv('csvs/appstore/appstore_binance_reviews_NG.csv')
-dfCA = pd.read_csv('csvs/appstore/appstore_coinbase_reviews_US.csv')
-dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_US.csv')
+dfCA = pd.read_csv('csvs/appstore/appstore_coinbase_reviews_NG.csv')
+dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_NG.csv')
 
 #df = dfCP.dropna(subset=['reviews'])
 #df = dfKP.dropna(subset=['reviews'])
@@ -22,7 +22,7 @@ dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_US.csv')
 
 
 #drops any entry that is empty and is not a string
-df = dfBA.dropna(subset=['reviews'])
+df = dfBP.dropna(subset=['reviews'])
 if 'title' in df.columns:   ###APPLY ONLY IN APPSTORE
     df = df.drop(columns =['isEdited','title','userName'])
 if 'developerResponse' in df.columns:
@@ -60,7 +60,7 @@ df['sentiment'] = df['sentiment'].map(sentiment_map)
 # Save the results back to a new CSV
 #df.to_csv('PS_Binance_CN_bert.csv', index=False)
 #df.to_csv('PS_Coinbase_CN_bert.csv', index=False)
-df.to_csv('AS_Binance_NG_bert.csv', index=False)
+df.to_csv('PS_Binance_NG_bert.csv', index=False)
 
 
 
