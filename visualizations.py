@@ -48,6 +48,10 @@ dkUAA = pd.read_csv('csvs/kucoin/AS_Kucoin_UA_bert.csv')
 dkCNA = pd.read_csv('csvs/kucoin/AS_Kucoin_CN_bert.csv')
 dkBRA = pd.read_csv('csvs/kucoin/AS_Kucoin_BR_bert.csv')
 
+binancetotal = pd.read_csv('csvs/binance/binanceTotal.csv')
+coinbasetotal = pd.read_csv('csvs/coinbase/coinbaseTotal.csv')
+kucointotal = pd.read_csv('csvs/kucoin/kucoinTotal.csv')
+
 
 def main():   
     #####
@@ -75,8 +79,8 @@ def main():
     # ########
     # visualize_sentiment_exchanges(dfP_US_binance, dfP_US_coinbase, dfP_US_kucoin)
     ##############
-    avg_sentiment_and_total_per_exchange(dbUSP,dcUSP,dkUSP)
-    total_count_per_exchange(dbUSP,dcUSP,dkUSP)
+    avg_sentiment_and_total_per_exchange(binancetotal,coinbasetotal,kucointotal)
+    total_count_per_exchange(binancetotal,coinbasetotal,kucointotal)
 
 ###########
     

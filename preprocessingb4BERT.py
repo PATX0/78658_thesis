@@ -59,6 +59,7 @@ def process_and_save_csv(path):
 def main():
     #preprocessor_BERT(df)
     dataframes = []
+    aux = []
     # List of exchanges, countries, and sources
     exchanges = ['Binance', 'Coinbase', 'Kucoin']
     countries = ['US', 'UA', 'NG', 'CN', 'BR']
@@ -74,20 +75,27 @@ def main():
     #             # Process and save each file
     #             process_and_save_csv(path)
 
-# THIS PART IS TO CONCAT AND SAVE THE NEW CSVS (per source)
-        
-    # Iterate over each file and process
-    for exchange in exchanges:
-        for country in countries:
-            for source in sources:
-                # Construct the file path
-                filename = f"{source}_binance_US_bert.csv"
-                path = f"csvs/binance/{filename}"
-                df = pd.read_csv(path)
-                dataframes.append(df)
-            combined_df = pd.concat(dataframes, ignore_index=True)
-            new_path = f"csvs/{exchange}/{exchange}{country}.csv"
-            combined_df.to_csv(new_path, index=False)
+    # THIS PART IS TO CONCAT AND SAVE THE NEW CSVS (per source)
+    # # Iterate over each file and process
+    # for exchange in exchanges:
+    #     for country in countries:
+    # for source in sources:
+    #             # Construct the file path
+    #     filename = f"{source}_kucoin_CN_bert.csv"
+    #     path = f"csvs/kucoin/{filename}"
+    #     df = pd.read_csv(path)
+    #     dataframes.append(df)
+    # combined_df = pd.concat(dataframes, ignore_index=True)
+    # new_path = f"csvs/kucoin/kucoinCN.csv"
+    # combined_df.to_csv(new_path, index=False)
+
+    #THIS PART IS TO COMBINE ALL EXCHANGE REVIEWS FROM the 5 countries, repetead execution for the 3 exchange
+    for country in countries:
+        path = f"csvs/kucoin/kucoin{country}.csv"
+        db = pd.read_csv(path)
+        aux.append(db)
+    kucoin_total = pd.concat(aux, ignore_index=True)
+    kucoin_total.to_csv('csvs/kucoin/kucoinTotal.csv', index=False)
 
 if __name__ == '__main__':
     main()
