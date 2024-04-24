@@ -11,11 +11,13 @@ country_codes = {
     'Nigeria': 'NG',
     'USA': 'US',
     'China': 'CN',
+    'India': 'IN',
+    'United Kingdom': 'GB',
     'Brazil': 'BR'
 }
 countries = ['UA','NG','US','CN','BR']
-countries1 = ['GB', 'IN']
-init_date = date = datetime.datetime(2017, 5, 1)
+countries1 = ['CN']
+init_date = date = datetime.datetime(2017, 1, 1)
 
 for c in countries1:
     #KUCOIN

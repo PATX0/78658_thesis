@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 
 # Load the data
 #Playstore
-dfBP = pd.read_csv('csvs/playstore/playstore_binance_reviews_US.csv')
-dfCP = pd.read_csv('csvs/playstore/playstore_coinbase_reviews_US.csv')
-dfKP = pd.read_csv('csvs/playstore/playstore_kucoin_reviews_US.csv')
+dfBP = pd.read_csv('csvs/playstore/playstore_binance_reviews_NG.csv')
+dfCP = pd.read_csv('csvs/playstore/playstore_coinbase_reviews_NG.csv')
+dfKP = pd.read_csv('csvs/playstore/playstore_kucoin_reviews_NG.csv')
 #Appstore
-dfBA = pd.read_csv('csvs/appstore/appstore_binance_reviews_US.csv')
+dfBA = pd.read_csv('csvs/appstore/appstore_binance_reviews_NG.csv')
 dfCA = pd.read_csv('csvs/appstore/appstore_coinbase_reviews_US.csv')
 dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_US.csv')
 
@@ -18,16 +18,18 @@ dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_US.csv')
 #df = dfCA.dropna(subset=['reviews'])
 #df = dfKA.dropna(subset=['reviews'])
 
-df = dfBP.dropna(subset=['reviews'])
-df = df[df['reviews'].apply(lambda x: isinstance(x, str))]
 
 
-""" if 'title' in df.columns:   ###APPLY ONLY IN APPSTORE
+
+#drops any entry that is empty and is not a string
+df = dfBA.dropna(subset=['reviews'])
+if 'title' in df.columns:   ###APPLY ONLY IN APPSTORE
     df = df.drop(columns =['isEdited','title','userName'])
 if 'developerResponse' in df.columns:
     df = df.drop(columns=['developerResponse'])
- """
-max_sequence_length = 512  # Maximum sequence length
+df = df[df['reviews'].apply(lambda x: isinstance(x, str))]
+
+max_sequence_length = 512  # Maximum sequence length (limit for BERT)
 
 # Iterate through each row and drop rows with review text length exceeding the limit of BERT (512)
 for index, row in df.iterrows():
@@ -58,7 +60,7 @@ df['sentiment'] = df['sentiment'].map(sentiment_map)
 # Save the results back to a new CSV
 #df.to_csv('PS_Binance_CN_bert.csv', index=False)
 #df.to_csv('PS_Coinbase_CN_bert.csv', index=False)
-df.to_csv('PS_Binance_US_bert.csv', index=False)
+df.to_csv('AS_Binance_NG_bert.csv', index=False)
 
 
 
