@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 
 # Load the data
 #Playstore
-dfBP = pd.read_csv('csvs/playstore/playstore_binance_reviews_NG.csv')
-dfCP = pd.read_csv('csvs/playstore/playstore_coinbase_reviews_NG.csv')
-dfKP = pd.read_csv('csvs/playstore/playstore_kucoin_reviews_NG.csv')
+dfBP = pd.read_csv('csvs/playstore/playstore_binance_reviews_UA.csv')
+dfCP = pd.read_csv('csvs/playstore/playstore_coinbase_reviews_UA.csv')
+dfKP = pd.read_csv('csvs/playstore/playstore_kucoin_reviews_UA.csv')
 #Appstore
-dfBA = pd.read_csv('csvs/appstore/appstore_binance_reviews_NG.csv')
-dfCA = pd.read_csv('csvs/appstore/appstore_coinbase_reviews_NG.csv')
-dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_NG.csv')
+dfBA = pd.read_csv('csvs/appstore/appstore_binance_reviews_UA.csv')
+dfCA = pd.read_csv('csvs/appstore/appstore_coinbase_reviews_UA.csv')
+dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_UA.csv')
 
 #df = dfCP.dropna(subset=['reviews'])
 #df = dfKP.dropna(subset=['reviews'])
@@ -22,7 +22,7 @@ dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_NG.csv')
 
 
 #drops any entry that is empty and is not a string
-df = dfBP.dropna(subset=['reviews'])
+df = dfCP.dropna(subset=['reviews'])
 if 'title' in df.columns:   ###APPLY ONLY IN APPSTORE
     df = df.drop(columns =['isEdited','title','userName'])
 if 'developerResponse' in df.columns:
@@ -60,7 +60,7 @@ df['sentiment'] = df['sentiment'].map(sentiment_map)
 # Save the results back to a new CSV
 #df.to_csv('PS_Binance_CN_bert.csv', index=False)
 #df.to_csv('PS_Coinbase_CN_bert.csv', index=False)
-df.to_csv('PS_Binance_NG_bert.csv', index=False)
+df.to_csv('PS_Coinbase_UA_bert.csv', index=False)
 
 
 
