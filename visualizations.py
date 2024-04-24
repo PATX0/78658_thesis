@@ -5,19 +5,49 @@ import seaborn as sns
 
 ### APPSTORE REVIEWS HAVE A USER RATING, WE CAN COMPARE IT WITH THE SENTIMENT SCORE
 ### PLAYSTORE DOESNT HAVE IT
-dfA_BR_binance = pd.read_csv('csvs/appstore/binance/AS_Binance_BR_bert.csv')
-dfP_BR_binance = pd.read_csv('csvs/playstore/binance/PS_Binance_BR_bert.csv')
-dfA_BR_coinbase = pd.read_csv('csvs/appstore/coinbase/AS_Coinbase_BR_bert.csv')
-dfP_BR_coinbase = pd.read_csv('csvs/playstore/coinbase/PS_Coinbase_BR_bert.csv')
-dfA_BR_kucoin = pd.read_csv('csvs/appstore/kucoin/AS_Kucoin_BR_bert.csv')
-dfP_BR_kucoin = pd.read_csv('csvs/playstore/kucoin/PS_Kucoin_BR_bert.csv')
 
-dfA_US_binance = pd.read_csv('csvs/appstore/binance/AS_Binance_US_bert.csv')
-dfP_US_binance = pd.read_csv('csvs/playstore/binance/PS_Binance_US_bert.csv')
-dfA_US_coinbase = pd.read_csv('csvs/appstore/coinbase/AS_Coinbase_US_bert.csv')
-dfP_US_coinbase = pd.read_csv('csvs/playstore/coinbase/PS_Coinbase_US_bert.csv')
-dfA_US_kucoin = pd.read_csv('csvs/appstore/kucoin/AS_Kucoin_US_bert.csv')
-dfP_US_kucoin = pd.read_csv('csvs/playstore/kucoin/PS_Kucoin_US_bert.csv')
+#BINANCE EXCHANGE CSVS
+#playstore
+dbUSP = pd.read_csv('csvs/binance/PS_Binance_US_bert.csv')
+dbNGP = pd.read_csv('csvs/binance/PS_Binance_NG_bert.csv')
+dbUAP = pd.read_csv('csvs/binance/PS_Binance_UA_bert.csv')
+dbCNP = pd.read_csv('csvs/binance/PS_Binance_CN_bert.csv')
+dbBRP = pd.read_csv('csvs/binance/PS_Binance_BR_bert.csv')
+#appstore
+dbUSA = pd.read_csv('csvs/binance/AS_Binance_US_bert.csv')
+dbNGA = pd.read_csv('csvs/binance/AS_Binance_NG_bert.csv')
+dbUAA = pd.read_csv('csvs/binance/AS_Binance_UA_bert.csv')
+dbCNA = pd.read_csv('csvs/binance/AS_Binance_CN_bert.csv')
+dbBRA = pd.read_csv('csvs/binance/AS_Binance_BR_bert.csv')
+
+#COINBASE
+#playstore
+dcUSP = pd.read_csv('csvs/coinbase/PS_Coinbase_US_bert.csv')
+dcNGP = pd.read_csv('csvs/coinbase/PS_Coinbase_NG_bert.csv')
+dcUAP = pd.read_csv('csvs/coinbase/PS_Coinbase_UA_bert.csv')
+dcCNP = pd.read_csv('csvs/coinbase/PS_Coinbase_CN_bert.csv')
+dcBRP = pd.read_csv('csvs/coinbase/PS_Coinbase_BR_bert.csv')
+#appstore
+dcUSA = pd.read_csv('csvs/coinbase/AS_Coinbase_US_bert.csv')
+dcNGA = pd.read_csv('csvs/coinbase/AS_Coinbase_NG_bert.csv')
+dcUAA = pd.read_csv('csvs/coinbase/AS_Coinbase_UA_bert.csv')
+dcCNA = pd.read_csv('csvs/coinbase/AS_Coinbase_CN_bert.csv')
+dcBRA = pd.read_csv('csvs/coinbase/AS_Coinbase_BR_bert.csv')
+
+#KUCOIN
+#playstore
+dkUSP = pd.read_csv('csvs/kucoin/PS_Kucoin_US_bert.csv')
+dkNGP = pd.read_csv('csvs/kucoin/PS_Kucoin_NG_bert.csv')
+dkUAP = pd.read_csv('csvs/kucoin/PS_Kucoin_UA_bert.csv')
+dkCNP = pd.read_csv('csvs/kucoin/PS_Kucoin_CN_bert.csv')
+dkBRP = pd.read_csv('csvs/kucoin/PS_Kucoin_BR_bert.csv')
+#appstore
+dkUSA = pd.read_csv('csvs/kucoin/AS_Kucoin_US_bert.csv')
+dkNGA = pd.read_csv('csvs/kucoin/AS_Kucoin_NG_bert.csv')
+dkUAA = pd.read_csv('csvs/kucoin/AS_Kucoin_UA_bert.csv')
+dkCNA = pd.read_csv('csvs/kucoin/AS_Kucoin_CN_bert.csv')
+dkBRA = pd.read_csv('csvs/kucoin/AS_Kucoin_BR_bert.csv')
+
 
 def main():   
     #####
@@ -45,7 +75,8 @@ def main():
     # ########
     # visualize_sentiment_exchanges(dfP_US_binance, dfP_US_coinbase, dfP_US_kucoin)
     ##############
-    avg_sentiment_and_total_per_exchange(dfP_US_binance,dfP_US_coinbase,dfP_US_kucoin)
+    avg_sentiment_and_total_per_exchange(dbUSP,dcUSP,dkUSP)
+    total_count_per_exchange(dbUSP,dcUSP,dkUSP)
 
 ###########
     
@@ -240,6 +271,67 @@ def visualize_sentiment_exchanges(binance_df, coinbase_df, kucoin_df):
     plt.legend(title='Platform')
     plt.show()
     
+
+
+
+def total_count_per_exchange(b,c,k):
+# Prepare data
+    # Convert 'timestamp' to datetime if not already
+    b['timestamp'] = pd.to_datetime(b['timestamp'])
+    c['timestamp'] = pd.to_datetime(c['timestamp'])
+    k['timestamp'] = pd.to_datetime(k['timestamp'])
+    b = b[b['timestamp'] >= '2017-01-01']
+    c = c[c['timestamp'] >= '2017-01-01']
+    k = k[k['timestamp'] >= '2017-01-01']
+
+    # Extract year and count per year
+    b_year_count = b['timestamp'].dt.year.value_counts().sort_index()
+    c_year_count = c['timestamp'].dt.year.value_counts().sort_index()
+    k_year_count = k['timestamp'].dt.year.value_counts().sort_index()
+
+    # Create a new figure and axis for the plot
+    fig, ax = plt.subplots(figsize=(14, 7))
+
+    # Plotting the yearly counts for each exchange
+    b_year_count.plot(ax=ax, color='orange', marker='o', label='Binance')
+    c_year_count.plot(ax=ax, color='blue', marker='o', label='Coinbase')
+    k_year_count.plot(ax=ax, color='green', marker='o', label='Kucoin')
+
+    # Annotate Binance data points
+    for i, value in b_year_count.items():
+        ax.annotate(value, (i, value), textcoords="offset points", xytext=(0,5), ha='center')
+
+    # Annotate Coinbase data points
+    for i, value in c_year_count.items():
+        ax.annotate(value, (i, value), textcoords="offset points", xytext=(0,5), ha='center')
+
+    # Annotate Kucoin data points
+    for i, value in k_year_count.items():
+        ax.annotate(value, (i, value), textcoords="offset points", xytext=(0,5), ha='center')
+    # Set labels and title
+    ax.set_xlabel('Year', fontsize=12)
+    ax.set_ylabel('Review Count', fontsize=12)
+    ax.set_title('Yearly Review Counts per Exchange', fontsize=16)
+
+    # Enable legend
+    ax.legend(title="Exchanges")
+
+    # Show grid
+    ax.grid(True)
+
+    # Show the plot
+    plt.show()
+
+    # Print the counts per year for each DataFrame
+    print("BINANCE Yearly Counts:")
+    print(b_year_count)
+    print("\nCOINBASE Yearly Counts:")
+    print(c_year_count)
+    print("\nKUCOIN Yearly Counts:")
+    print(k_year_count)
+
+
+
 # Function to prepare data, grouping by year and aggregating the total count and the average sentiment score of the given dataset
 def prepare_data(df, exchange_name):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -249,8 +341,9 @@ def prepare_data(df, exchange_name):
     return df.groupby('year').agg(total_count=('sentiment', 'size'),
                                 average_sentiment=('sentiment', 'mean')).reset_index().assign(exchange=exchange_name)
 
+
 def avg_sentiment_and_total_per_exchange(binance, coinbase, kucoin):
-    # Prepare data
+    
     binance_annual = prepare_data(binance, 'Binance')
     print('Binance complete.')
     coinbase_annual = prepare_data(coinbase, 'Coinbase')

@@ -14,24 +14,11 @@ def preprocessor_BERT(df):
         if len(row['reviews']) > max_sequence_length:
             df.drop(index, inplace=True)
 
-
-def convert_timestamp(entry):
-    # Attempt to convert entry to numeric (float), errors='coerce' will convert failures to NaN
-    numeric_entry = pd.to_numeric(entry, errors='coerce')
-    print(numeric_entry)
-        # Check if the conversion was successful (not NaN)
-    if pd.notna(numeric_entry):
-        return pd.to_datetime(entry, unit='ms').strftime('%Y-%m-%d')
-    # Convert string to datetime object
-    return entry
         
 def normalize_sentiment(df, output_csv):
     """
+
     Normalizes the sentiment labels in the DataFrame to numerical scores and overwrites the original CSV file with the normalized data.
-    
-    Args:
-    df (pandas.DataFrame): DataFrame containing the sentiment labels.
-    output_csv (str): Path to the CSV file where the normalized DataFrame will be saved.
     """
     sentiment_map = {
         'very_bad': 1,
@@ -45,25 +32,47 @@ def normalize_sentiment(df, output_csv):
     print(f"Normalized DataFrame saved to {output_csv}")
     
 
-def main():
-    # Define file paths
-    paths = [
-        #'csvs/playstore/playstore_binance_reviews_UA.csv',
-        #'csvs/playstore/playstore_binance_reviews_UA.csv',
-        #'csvs/playstore/coinbase/AS_Coinbase_CN_bert.csv',
-        'csvs/playstore/playstore_coinbase_reviews_UA.csv',
-        #'csvs/playstore/kucoin/AS_Kucoin_CN_bert.csv',
-        'csvs/playstore/playstore_kucoin_reviews_UA.csv'
-    ]
 
-    # Load each CSV and normalize sentiment
-    for path in paths:
+# Function to load CSV, modify, and save with the same name, adding rating to the Playstore  csvs
+def process_and_save_csv(path):
+    try:
+        # Load the DataFrame
         df = pd.read_csv(path)
-        # Apply conversion function to the timestamp column
-        df['timestamp'] = df['timestamp'].apply(convert_timestamp)
+        
+        # Add 'rating' column if it doesn't exist
+        if 'rating' not in df.columns:
+            df['rating'] = pd.NA  # Using pandas' NA for missing data handling
+
+        # Convert 'timestamp' to datetime and format to '%Y-%m-%d'
+        df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce').dt.strftime('%Y-%m-%d')
+
+        # Save the DataFrame back to the same CSV
         df.to_csv(path, index=False)
-        #preprocessor_BERT(df)
-        #normalize_sentiment(df, path)  # Pass both the DataFrame and the path for saving
+        print(f"Processed and saved: {path}")
+
+    except FileNotFoundError:
+        print(f"File not found: {path}")
+    except Exception as e:
+        print(f"Error processing {path}: {e}")
+
+
+def main():
+    #preprocessor_BERT(df)
+    
+    # List of exchanges, countries, and sources
+    exchanges = ['Binance', 'Coinbase', 'Kucoin']
+    countries = ['US', 'UA', 'NG', 'CN', 'BR']
+    sources = ['AS']  # PlayStore (PS) and AppStore (AS)
+
+    # Iterate over each file and process
+    for exchange in exchanges:
+        for country in countries:
+            for source in sources:
+                # Construct the file path
+                filename = f"{source}_{exchange}_{country}_bert.csv"
+                path = f"csvs/{exchange.lower()}/{filename}"
+                # Process and save each file
+                process_and_save_csv(path)
 
 
 if __name__ == '__main__':
