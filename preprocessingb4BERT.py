@@ -58,22 +58,36 @@ def process_and_save_csv(path):
 
 def main():
     #preprocessor_BERT(df)
-    
+    dataframes = []
     # List of exchanges, countries, and sources
     exchanges = ['Binance', 'Coinbase', 'Kucoin']
     countries = ['US', 'UA', 'NG', 'CN', 'BR']
-    sources = ['AS']  # PlayStore (PS) and AppStore (AS)
+    sources = ['AS','PS']  # PlayStore (PS) and AppStore (AS)
 
+    # THIS PART WAS USED TO standardize the timestamps and add the 'rating' columns so we can concat the csvs
+    # for exchange in exchanges:
+    #     for country in countries:
+    #         for source in sources:
+    #             # Construct the file path
+    #             filename = f"{source}_{exchange}_{country}_bert.csv"
+    #             path = f"csvs/{exchange.lower()}/{filename}"
+    #             # Process and save each file
+    #             process_and_save_csv(path)
+
+# THIS PART IS TO CONCAT AND SAVE THE NEW CSVS (per source)
+        
     # Iterate over each file and process
     for exchange in exchanges:
         for country in countries:
             for source in sources:
                 # Construct the file path
-                filename = f"{source}_{exchange}_{country}_bert.csv"
-                path = f"csvs/{exchange.lower()}/{filename}"
-                # Process and save each file
-                process_and_save_csv(path)
-
+                filename = f"{source}_binance_US_bert.csv"
+                path = f"csvs/binance/{filename}"
+                df = pd.read_csv(path)
+                dataframes.append(df)
+            combined_df = pd.concat(dataframes, ignore_index=True)
+            new_path = f"csvs/{exchange}/{exchange}{country}.csv"
+            combined_df.to_csv(new_path, index=False)
 
 if __name__ == '__main__':
     main()
