@@ -48,342 +48,260 @@ dkUAA = pd.read_csv('csvs/kucoin/AS_Kucoin_UA_bert.csv')
 dkCNA = pd.read_csv('csvs/kucoin/AS_Kucoin_CN_bert.csv')
 dkBRA = pd.read_csv('csvs/kucoin/AS_Kucoin_BR_bert.csv')
 
+brTotal = pd.read_csv('csvs/BR/BRtotal.csv')
+cnTotal = pd.read_csv('csvs/CN/CNtotal.csv')
+ngTotal = pd.read_csv('csvs/NG/NGtotal.csv')
+uaTotal = pd.read_csv('csvs/UA/UAtotal.csv')
+usTotal = pd.read_csv('csvs/US/UStotal.csv')
+
 binancetotal = pd.read_csv('csvs/binance/binanceTotal.csv')
 coinbasetotal = pd.read_csv('csvs/coinbase/coinbaseTotal.csv')
 kucointotal = pd.read_csv('csvs/kucoin/kucoinTotal.csv')
 
+btc = pd.read_csv('csvs/BTC_daily_pricevol.csv')
 
-def main():   
-    #####
-    # compare_score_vs_rating(dfA_US_binance)
-    # #####
-    # display_sentiment_counts(dfP_US_binance)
-    # #######
-    # crosscheck_btc(dfP_US_binance)
-    # ##################################
-    # plot_sentiment_distribution(dfP_US_binance, "Binance")
-    # plot_sentiment_over_time(dfP_US_binance, "Binance")
-    # plot_sentiment_distribution(dfP_US_coinbase, "Coinbase")
-    # plot_sentiment_over_time(dfP_US_coinbase, "Coinbase")
-    # plot_sentiment_distribution(dfP_US_kucoin, "Kucoin")
-    # plot_sentiment_over_time(dfP_US_kucoin, "Kucoin")
-    # ##########density chart - sentiment distro
-    # plot_average_monthly_sentiment()
-    # #same with seaborn
-    # plt.figure(figsize=(15, 5))
-    # plot_density_sentiment_distribution(dfP_US_binance)
-    # plot_density_sentiment_distribution(dfP_US_coinbase)
-    # plot_density_sentiment_distribution(dfP_US_kucoin)
-    # plt.legend()
-    # plt.show()
-    # ########
-    # visualize_sentiment_exchanges(dfP_US_binance, dfP_US_coinbase, dfP_US_kucoin)
-    ##############
-    avg_sentiment_and_total_per_exchange(binancetotal,coinbasetotal,kucointotal)
-    total_count_per_exchange(binancetotal,coinbasetotal,kucointotal)
+palette = {'Binance': 'orange', 'Coinbase': 'blue', 'Kucoin': 'green',
+            'BR': 'gold', 'CN': 'red', 'NG': 'darkgreen', 'UA': 'cyan', 'US': 'indigo' }
+# Groups the average sentiment by year
+def preprocess_sentiment_year(df):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    # Filter the data to include only entries after 2017-01-01 (coinbase has)
+    df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
+    df['year'] = df['timestamp'].dt.year
+    df = df.groupby('year')['sentiment'].mean().reset_index()
+    return df
 
-###########
-    
-def display_sentiment_counts(csv):
-    # Calculate the count of each sentiment label in the 'sentiment' column
-    sentiment_counts = csv['sentiment'].value_counts()
-    #sentiment_mapping = {'very_bad': 1, 'bad': 2, 'neutral': 3, 'good': 4, 'very_good': 5}
-    #df_sentiment['sentiment'] = df_sentiment['sentiment'].map(sentiment_mapping)
+# Groups the average btc price by month
+def preprocess_btc_month(df):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month
+    monthly_avg = df.groupby('year_month')['price'].mean().reset_index()
+    monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
+    return monthly_avg
 
-    # Plotting the bar chart
-    colors = ['darkgreen', 'lightgreen', 'yellow', 'orange', 'red']
-    # Extract x-values (sentiment labels) and y-values (counts) as lists
-    x_values = sentiment_counts.index.tolist()
-    y_values = sentiment_counts.values.tolist()
+# Groups the average btc price by year
+def preprocess_btc_year(df):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['year'] = df['timestamp'].dt.year  # Extracting year as an integer
+    annual_avg = df.groupby('year')['price'].mean().reset_index()
+    return annual_avg
 
-    # Plotting the bar chart
- # Plotting the bar chart
-    plt.figure(figsize=(10,6))
-    bars = plt.bar(x_values, y_values, color=colors)
-    plt.title("Sentiment Distribution - Bar Chart")
-    plt.ylabel('Number of Reviews')
-    plt.xlabel('Sentiment')
-    plt.grid(axis='y')
+# Groups the average sentiment by month
+def preprocess_sentiment_month(df):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    # Filter the data to include only entries after 2017-01-01 (coinbase has)
+    df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
+    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month
+    monthly_avg = df.groupby('year_month')['sentiment'].mean().reset_index()
+    monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
+    return monthly_avg
 
-
-    # Annotate the count above each bar
-    for bar in bars:
-        yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2, yval, int(yval), ha='center', va='bottom')
-
-    plt.tight_layout()
-    plt.show()
-
-def crosscheck_btc(df_sentiment):
-
-    # Load the sentiment data
-    df_sentiment['timestamp'] = pd.to_datetime(df_sentiment['timestamp'])
-    df_sentiment['year_month'] = df_sentiment['timestamp'].dt.to_period('M')
-    df_sentiment_monthly = df_sentiment.groupby('year_month')['sentiment'].mean().reset_index()
-
-    # Load the BTC/USD data
-    dfBTC = pd.read_csv('csvs/BTC_daily_pricevol.csv')
-    dfBTC['timestamp'] = pd.to_datetime(dfBTC['timestamp'])
-    dfBTC['year_month'] = dfBTC['timestamp'].dt.to_period('M')
-    dfBTC_monthly = dfBTC.groupby('year_month')['price'].mean().reset_index()
-
-    # Plotting
-    fig, ax1 = plt.subplots(figsize=(15, 6))
-
-    # Plotting sentiment
-    ax1.plot(df_sentiment_monthly['year_month'].dt.to_timestamp(), df_sentiment_monthly['sentiment'], label='Average Sentiment', color='blue')
-    ax1.set_xlabel('Month')
-    ax1.set_ylabel('Average Sentiment Score', color='blue')
-    ax1.tick_params(axis='y', labelcolor='blue')
-    ax1.set_title('Average Sentiment and BTC Price Over Time')
-
-    # Plotting BTC price on a secondary y-axis
-    ax2 = ax1.twinx()
-    ax2.plot(dfBTC_monthly['year_month'].dt.to_timestamp(), dfBTC_monthly['price'], label='BTC Price', color='orange')
-    ax2.set_ylabel('BTC Price in USD', color='orange')
-    ax2.tick_params(axis='y', labelcolor='orange')
-
-    # Additional settings
-    plt.xticks(rotation=45)
-    ax1.grid(True)
-
-    plt.show()
-
-def compare_score_vs_rating(df): ### ONLY WORKS WITH APPSTORE     
-    # Map the sentiment to numerical scores
-    
-    # Group data by rating and calculate average sentiment score for each rating
-    grouped_by_rating = df.groupby('rating')['sentiment'].mean()
-
-    # Create a scatter plot with a trend line
+# Function to plot sentiment trends
+def plot_sentiment_trends(df_dict, title):
     plt.figure(figsize=(10, 6))
-    sns.regplot(x=grouped_by_rating.index, y=grouped_by_rating.values, scatter_kws={'s': 100}, color='darkblue')
-    plt.title('Average Sentiment Score by User Rating')
-    plt.xlabel('User Rating')
-    plt.ylabel('Average Sentiment Score')
+    for label, df in df_dict.items():
+        color = palette.get(label, 'gray')  # Default to 'gray' if label is not found in palette
+        plt.plot(df['year'], df['sentiment'], label=label, marker='o', color=color)
+    plt.title(title)
+    plt.xlabel('Year')
+    plt.ylabel('Average Sentiment')
+    plt.legend()
     plt.grid(True)
     plt.show()
 
-
-####################################################################################################################################################################################################################################
-
-# Function to plot sentiment distribution
-def plot_sentiment_distribution(data, title):
-    plt.figure(figsize=(8, 4))
-    sns.countplot(data['sentiment'])
-    plt.title(f'Sentiment Distribution for {title}')
-    plt.xlabel('Sentiment Score')
-    plt.ylabel('Count')
-    plt.show()
-
-# Function to plot sentiment over time
-def plot_sentiment_over_time(data, title):
-    # Convert timestamp to datetime
-    data['timestamp'] = pd.to_datetime(data['timestamp'])
-    data = data.sort_values(by='timestamp')
-
-    # Resampling to monthly average sentiment
-    monthly_sentiment = data.resample('M', on='timestamp').mean()
-
-    plt.figure(figsize=(12, 6))
-    plt.plot(monthly_sentiment.index, monthly_sentiment['sentiment'], marker='o')
-    plt.title(f'Monthly Average Sentiment Over Time for {title}')
-    plt.xlabel('Time')
-    plt.ylabel('Average Sentiment')
-    plt.show()
-
-# Plotting for each dataset
-
-####################################################################################################################################################################################################################################
-
-#Average Monthly Sentiment: The first plot shows the average monthly sentiment for Binance (blue), Coinbase (green), and Kucoin (red). This graph provides insight into how user sentiment fluctuates over time on each platform. 
-#Trends, seasonal patterns, or any significant changes in sentiment over the months can be observed.
-#Sentiment Score Distribution Across Platforms: The second plot is a set of box plots comparing the distribution of sentiment scores across Binance, Coinbase, and Kucoin. 
-#This visualization helps to understand the range, median, and variability of sentiment scores on each platform. 
-#It's useful for identifying differences in user sentiment across these platforms, such as which platform tends to have more positive or negative reviews.
-#These analyses give a clearer picture of the sentiment dynamics and can be used to draw insights about user experiences and perceptions on each cryptocurrency trading platform
-####################################################################################################################################################################################################################################
-
-
-def plot_density_sentiment_distribution(df):
-    """
-    Plot a density plot for sentiment distribution of a given dataset.
-    """
-    sns.kdeplot(df['sentiment'], label=df.name, fill=True)
-    plt.xlabel('Sentiment Score')
-    plt.ylabel('Density')
-    plt.title(f'Sentiment Score Density Distribution for {df.name}')
+def plot_sentiment_btc_year(sentiment_data, btc_data):
+    fig, ax1 = plt.subplots(figsize=(12, 8))
     
+    # Plotting sentiment trends
+    for label, df in sentiment_data.items():
+        ax1.plot(df['year'], df['sentiment'], label=f"{label} Sentiment", marker='o', color=palette[label])
 
-#Here's the density plot visualizing the sentiment score distributions for Binance, Coinbase, and Kucoin:
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('Average Sentiment')
+    ax1.legend(loc='upper left')
+    ax1.grid(True)
+    ax1.set_title("Sentiment and BTC Price Trends Over Time")
 
-#Each curve represents the density distribution of sentiment scores for one of the platforms.
-#The x-axis shows the sentiment scores, while the y-axis represents the density (probability distribution).
-#The area under each curve indicates the frequency of sentiment scores within that range.
-#This visualization provides a smooth and continuous view of how sentiment scores are spread out for each platform, allowing you to compare the distributions directly. 
-#It's particularly useful for identifying the most common sentiment scores and seeing how tightly or widely they are distributed on each platform
-#########################################################################################################################################################################################################################
+    # Adjust Bitcoin plotting to match sentiment data years
+    ax2 = ax1.twinx()
+    ax2.plot(btc_data['year'], btc_data['price'], label='BTC Price', color='black', marker='x', linestyle='--')
+    ax2.set_ylabel('BTC Average Close Price (USD)')
+    ax2.legend(loc='upper right')
 
-#####DONE WITH SEABORN
-
-# Function to prepare data for average monthly sentiment analysis
-def prepare_monthly_sentiment_data(df, platform_name):
-    # 'timestamp' needs to be in datetime format
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    # Set 'timestamp' as the index for search purposes
-    df = df.set_index('timestamp')
-    # Resample and calculate the mean of the 'sentiment' column only
-    df_monthly = df[['sentiment']].resample('M').mean().reset_index()
-    df_monthly['Platform'] = platform_name
-    return df_monthly
-
-def visualize_sentiment_exchanges(binance_df, coinbase_df, kucoin_df):
-    # Color assignments
-    colors = {
-        'Binance': '#FFFF00',  #  Yellow 
-        'Coinbase': '#002395',  # Blue
-        'Kucoin': '#00AB84',  # Green
-    }
-
-    # Preparing monthly sentiment data for each platform
-    binance_monthly = prepare_monthly_sentiment_data(binance_df, 'Binance')
-    coinbase_monthly = prepare_monthly_sentiment_data(coinbase_df, 'Coinbase')
-    kucoin_monthly = prepare_monthly_sentiment_data(kucoin_df, 'Kucoin')
-
-    # Combining data
-    combined_monthly = pd.concat([binance_monthly, coinbase_monthly, kucoin_monthly])
-
-    # Average Monthly Sentiment Line Plot
-    plt.figure(figsize=(15, 5))
-    sns.lineplot(data=combined_monthly, x='timestamp', y='sentiment', hue='Platform', 
-                 palette=colors, style='Platform')
-    plt.title('Average Monthly Sentiment Analysis')
-    plt.xlabel('Month')
-    plt.ylabel('Average Sentiment')
-    plt.xticks(rotation=45)
-    plt.legend(title='Platform')
     plt.show()
 
-    # Sentiment Score Density Plot
-    plt.figure(figsize=(15, 5))
-    sns.kdeplot(binance_df['sentiment'], color='#FE5000', label='Binance', fill=True)
-    sns.kdeplot(coinbase_df['sentiment'], color='#002395', label='Coinbase', fill=True)
-    sns.kdeplot(kucoin_df['sentiment'], color='#00AB84', label='Kucoin', fill=True)
-    plt.title('Density Plot of Sentiment Scores Across Platforms')
-    plt.xlabel('Sentiment Score')
-    plt.ylabel('Density')
-    plt.legend(title='Platform')
-    plt.show()
+
+def plot_sentiment_btc_year_month(sentiment_data, btc_data):
+    fig, ax1 = plt.subplots(figsize=(12, 8))
     
+    # Plotting sentiment trends
+    for label, df in sentiment_data.items():
+        ax1.plot(df['year_month'], df['sentiment'], label=f"{label} Sentiment", marker='o', color=palette.get(label, 'gray'))
 
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('Average Sentiment')
+    ax1.xaxis.set_major_locator(mdates.YearLocator())  # Set major ticks to display only years
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))  # Format ticks to display only the year
+    ax1.legend(loc='upper left')
+    ax1.grid(True)
+    ax1.set_title("Sentiment and BTC Price Trends Over Time")
 
+    # Adjust Bitcoin plotting to match sentiment data timing
+    ax2 = ax1.twinx()
+    ax2.plot(btc_data['year_month'], btc_data['price'], label='BTC Price', color='black', marker='x', linestyle='--')
+    ax2.set_ylabel('BTC Average Close Price (USD)')
+    ax2.legend(loc='upper right')
 
-def total_count_per_exchange(b,c,k):
-# Prepare data
-    # Convert 'timestamp' to datetime if not already
-    b['timestamp'] = pd.to_datetime(b['timestamp'])
-    c['timestamp'] = pd.to_datetime(c['timestamp'])
-    k['timestamp'] = pd.to_datetime(k['timestamp'])
-    b = b[b['timestamp'] >= '2017-01-01']
-    c = c[c['timestamp'] >= '2017-01-01']
-    k = k[k['timestamp'] >= '2017-01-01']
-
-    # Extract year and count per year
-    b_year_count = b['timestamp'].dt.year.value_counts().sort_index()
-    c_year_count = c['timestamp'].dt.year.value_counts().sort_index()
-    k_year_count = k['timestamp'].dt.year.value_counts().sort_index()
-
-    # Create a new figure and axis for the plot
-    fig, ax = plt.subplots(figsize=(14, 7))
-
-    # Plotting the yearly counts for each exchange
-    b_year_count.plot(ax=ax, color='orange', marker='o', label='Binance')
-    c_year_count.plot(ax=ax, color='blue', marker='o', label='Coinbase')
-    k_year_count.plot(ax=ax, color='green', marker='o', label='Kucoin')
-
-    # Annotate Binance data points
-    for i, value in b_year_count.items():
-        ax.annotate(value, (i, value), textcoords="offset points", xytext=(0,5), ha='center')
-
-    # Annotate Coinbase data points
-    for i, value in c_year_count.items():
-        ax.annotate(value, (i, value), textcoords="offset points", xytext=(0,5), ha='center')
-
-    # Annotate Kucoin data points
-    for i, value in k_year_count.items():
-        ax.annotate(value, (i, value), textcoords="offset points", xytext=(0,5), ha='center')
-    # Set labels and title
-    ax.set_xlabel('Year', fontsize=12)
-    ax.set_ylabel('Review Count', fontsize=12)
-    ax.set_title('Yearly Review Counts per Exchange', fontsize=16)
-
-    # Enable legend
-    ax.legend(title="Exchanges")
-
-    # Show grid
-    ax.grid(True)
-
-    # Show the plot
     plt.show()
 
-    # Print the counts per year for each DataFrame
-    print("BINANCE Yearly Counts:")
-    print(b_year_count)
-    print("\nCOINBASE Yearly Counts:")
-    print(c_year_count)
-    print("\nKUCOIN Yearly Counts:")
-    print(k_year_count)
+# Function to plot sentiment trends using heatmaps
+def plot_heatmap(df_dict, x):
+    # Transform dictionary of DataFrames into a single DataFrame for heatmap
+    heatmap_data = pd.DataFrame({
+        label: df.set_index('year')['sentiment']
+        for label, df in df_dict.items()
+    })
+    heatmap_data = heatmap_data.T  # Transpose to make years the columns and labels the rows
 
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(heatmap_data, annot=True, cmap="coolwarm_r", fmt=".2f",vmin = 2, vmax = 4)
+    if x == 'e' :
+        plt.ylabel('Exchange')
+        plt.title('Average Sentiment Heatmap by Exchange')
+    if x == 'c':
+        plt.ylabel('Country')
+        plt.title('Average Sentiment Heatmap by Country')
+    plt.xlabel('Year')
+    plt.show()
 
+# Function that checks if the rating == sentiment 
+def calculate_hit_rate(df, exchange_name):
+    df['rating'] = pd.to_numeric(df['rating'], errors='coerce')  # Ensuring 'rating' is numeric
+    df = df.dropna(subset=['rating', 'sentiment'])  # Ensure both fields are non-empty
+    df['match_type'] = (df['rating'] == df['sentiment']).replace({True: 'Exact Match', False: 'Mismatch'})
+    df['exchange'] = exchange_name  # Add exchange name for grouping in plots
+    return df
 
-# Function to prepare data, grouping by year and aggregating the total count and the average sentiment score of the given dataset
-def prepare_data(df, exchange_name):
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    # Filter out dates before January 1, 2017
-    df = df[df['timestamp'] >= '2017-01-01']
-    df['year'] = df['timestamp'].dt.year
-    return df.groupby('year').agg(total_count=('sentiment', 'size'),
-                                average_sentiment=('sentiment', 'mean')).reset_index().assign(exchange=exchange_name)
+# Function to plot the hit rate of sentiment score
+def plot_hitrate_sentiment(b,c,k):
+    binance = calculate_hit_rate(b, 'Binance')
+    coinbase = calculate_hit_rate(c, 'Coinbase')
+    kucoin = calculate_hit_rate(k, 'Kucoin')
+    combined_df = pd.concat([binance, coinbase, kucoin], ignore_index=True)
 
-
-def avg_sentiment_and_total_per_exchange(binance, coinbase, kucoin):
-    
-    binance_annual = prepare_data(binance, 'Binance')
-    print('Binance complete.')
-    coinbase_annual = prepare_data(coinbase, 'Coinbase')
-    print('Coinbase complete.')
-    kucoin_annual = prepare_data(kucoin, 'Kucoin')
-    print('Kucoin complete.')
-
-    # Combine all data
-    combined_annual = pd.concat([binance_annual, coinbase_annual, kucoin_annual])
+    # Calculate percentages
+    match_counts = combined_df.groupby(['exchange', 'match_type']).size().reset_index(name='counts')
+    total_counts = combined_df.groupby('exchange').size().reset_index(name='total')
+    match_counts = match_counts.merge(total_counts, on='exchange')
+    match_counts['percentage'] = (match_counts['counts'] / match_counts['total']) * 100
 
     # Plotting
-    fig, ax1 = plt.subplots(figsize=(12, 8))
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='exchange', y='percentage', hue='match_type', data=match_counts, palette="pastel")
+    plt.title('Sentiment Score vs Rating Across Exchanges (Percentage)')
+    plt.xlabel('Exchanges')
+    plt.ylabel('Percentage')
+    plt.legend(title='Match Type')
 
-    # Colors for different exchanges
-    colors = {'Binance': 'orange', 'Coinbase': 'blue', 'Kucoin': 'green'}
+    # Annotate percentages on bars
+    for p in plt.gca().patches:
+        height = p.get_height()
+        plt.gca().text(p.get_x() + p.get_width() / 2, height + 0.5, '{:1.2f}%'.format(height),
+                       ha="center")
 
-    # Plot total count of reviews by year for each exchange
-    for name, group in combined_annual.groupby('exchange'):
-        ax1.bar(group['year'] + 0.00*list(colors.keys()).index(name) - 0.20, group['total_count'], color=colors[name], width=0.20, label=f'{name} Total Count')
-
-    # Create a twin axis for the average sentiment
-    ax2 = ax1.twinx()
-    for name, group in combined_annual.groupby('exchange'):
-        ax2.plot(group['year'], group['average_sentiment'], color=colors[name], marker='o', linestyle='-', label=f'{name} Avg Sentiment')
-        # Annotate each point with its exact value
-        for i, txt in enumerate(group['average_sentiment']):
-            ax2.annotate(f'{txt:.2f}', (group['year'].iloc[i], group['average_sentiment'].iloc[i]), textcoords="offset points", xytext=(0,10), ha='center')
-
-    # Labels, title and legend
-    ax1.set_xlabel('Year')
-    ax1.set_ylabel('Total Count of Reviews', color='blue')
-    ax2.set_ylabel('Average Sentiment Score', color='black')
-    plt.title('Total Count of Reviews and Average Sentiment by Year for Each Exchange')
-    fig.legend(loc='upper left', bbox_to_anchor=(0.1,0.9))
     plt.show()
+
+#function to plot sentiment distribution count
+def plot_sentiment_distribution(exchange_data):
+    # Create an empty DataFrame to store all data
+    combined_data = pd.DataFrame()
+
+    # Loop through each exchange data and append to the combined DataFrame
+    for exchange_name, data in exchange_data.items():
+        # Assuming sentiment scores are in a column named 'sentiment'
+        temp = data[['sentiment']].copy()  # Select only the 'sentiment' column
+        temp['Exchange'] = exchange_name  # Add exchange name for grouping in plot
+        combined_data = pd.concat([combined_data, temp], ignore_index=True)
+
+    # Plotting the sentiment score distribution using count plot
+    plt.figure(figsize=(12, 6))
+    sns.countplot(x='sentiment', hue='Exchange', data=combined_data, palette=palette)
+    plt.title('Sentiment Score Distribution Across Exchanges')
+    plt.xlabel('Sentiment Score')
+    plt.ylabel('Count')
+    plt.legend(title='Exchange')
+    plt.show()
+
+def main():
+# Preprocessing each DataFrame
+    # Define custom colors for each exchange
+    btc_data_y = preprocess_btc_year(btc)
+    btc_data_m = preprocess_btc_month(btc)   
+
+    binancem = preprocess_sentiment_month(binancetotal)
+    coinbasem = preprocess_sentiment_month(coinbasetotal)
+    kucoinm = preprocess_sentiment_month(kucointotal)
+
+    binance = preprocess_sentiment_year(binancetotal)
+    coinbase = preprocess_sentiment_year(coinbasetotal)
+    kucoin = preprocess_sentiment_year(kucointotal)
+
+    br = preprocess_sentiment_year(brTotal)
+    cn  = preprocess_sentiment_year(cnTotal)
+    ng = preprocess_sentiment_year(ngTotal)
+    ua = preprocess_sentiment_year(uaTotal)
+    us = preprocess_sentiment_year(usTotal)
+    # Gather the data
+    exchange_data_y = {
+        'Binance': binance,
+        'Coinbase': coinbase,
+        'Kucoin': kucoin
+    }
+    exchange_data_m = {
+        'Binance': binancem,
+        'Coinbase': coinbasem,
+        'Kucoin': kucoinm
+    }
+    exchanges = {
+        'Binance': binancetotal,
+        'Coinbase': coinbasetotal,
+        'Kucoin': kucointotal
+    }
+    country_totals = {
+        'BR': br,
+        'CN': cn,
+        'NG': ng,
+        'UA': ua,
+        'US': us
+    }
+
+
+    
+
+
+    #Plot sentiment counts for all exchanges
+    plot_sentiment_distribution(exchanges)
+    # Plot sentiment trends over time for exchanges
+    plot_sentiment_trends(exchange_data_y, 'Average Sentiment by Exchange')
+    # Plot sentiment trends over time for countries
+    plot_sentiment_trends(country_totals, 'Average Sentiment by Country')
+
+    #Plot sentiment trends by month and correlate with btc price  & volume
+    plot_sentiment_btc_year_month(exchange_data_m, btc_data_m)
+
+    #plot sentiment trend by year and btc price yearly
+    plot_sentiment_btc_year(exchange_data_y, btc_data_y)
+    # Plot sentiment trends over time for exchanges with heatmap
+    plot_heatmap(exchange_data_y, 'e')
+    # Plot sentiment trends over time for countries with heatmap
+    plot_heatmap(country_totals, 'c')     
+
+    # Plot hit rate
+    plot_hitrate_sentiment(binancetotal, coinbasetotal, kucointotal)
 
 # Execution starts here
 if __name__ == '__main__':
     main()
+
+
+
