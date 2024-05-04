@@ -66,40 +66,40 @@ def main():
     countries = ['US', 'UA', 'NG', 'CN', 'BR']
     sources = ['AS','PS']  # PlayStore (PS) and AppStore (AS)
 
-    # # THIS PART WAS USED TO standardize the timestamps and add the 'rating' columns so we can concat the csvs
-    # for exchange in exchanges:
-    #     for country in countries:
-    #         for source in sources:
-    #             filename = f"{source}_{exchange}_{country}_bert.csv"
-    #             path = f"csvs/{exchange.lower()}/{filename}"
-    #             # Process and save each file
-    #             process_and_save_csv(path)
+    # THIS PART WAS USED TO standardize the timestamps and add the 'rating' columns so we can concat the csvs
+    for exchange in exchanges:
+        for country in countries:
+            for source in sources:
+                filename = f"{source}_{exchange}_{country}_bert.csv"
+                path = f"csvs/{exchange.lower()}/{filename}"
+                # Process and save each file
+                process_and_save_csv(path)
 
-    # # THIS PART IS TO CONCAT AND SAVE THE NEW CSVS (per source)
-    # for source in sources:
-    #     filename = f"{source}_kucoin_CN_bert.csv"
-    #     path = f"csvs/kucoin/{filename}"
-    #     df = pd.read_csv(path)
-    #     aux0.append(df)
-    # combined_df = pd.concat(aux0, ignore_index=True)
-    # combined_df.to_csv("csvs/kucoin/kucoinCN.csv", index=False)
+    # THIS PART IS TO CONCAT AND SAVE THE NEW CSVS (per source)
+    for source in sources:
+        filename = f"{source}_kucoin_CN_bert.csv"
+        path = f"csvs/kucoin/{filename}"
+        df = pd.read_csv(path)
+        aux0.append(df)
+    combined_df = pd.concat(aux0, ignore_index=True)
+    combined_df.to_csv("csvs/kucoin/kucoinCN.csv", index=False)
 
-    # #THIS PART IS TO COMBINE ALL EXCHANGE REVIEWS FROM the 5 countries , repeated execution for the 3 exchanges
-    # for country in countries:
-    #     path = f"csvs/kucoin/kucoin{country}.csv"
-    #     db = pd.read_csv(path)
-    #     aux.append(db)
-    # kucoin_total = pd.concat(aux, ignore_index=True)
-    # kucoin_total.to_csv('csvs/kucoin/kucoinTotal.csv', index=False)
+    #THIS PART IS TO COMBINE ALL EXCHANGE REVIEWS FROM the 5 countries , repeated execution for the 3 exchanges
+    for country in countries:
+        path = f"csvs/kucoin/kucoin{country}.csv"
+        db = pd.read_csv(path)
+        aux.append(db)
+    kucoin_total = pd.concat(aux, ignore_index=True)
+    kucoin_total.to_csv('csvs/kucoin/kucoinTotal.csv', index=False)
 
-    # ##THIS PART IS TO COMBINE ALL COUNTRY REVIEWS in 1 single csv, repeated execution for the 5 countries
-    # for source in sources:
-    #     for exchange in exchanges:
-    #         path = f"csvs/NG/{source}_{exchange}_NG_bert.csv"
-    #         df1 = pd.read_csv(path)
-    #         aux1.append(df1)
-    # country_total = pd.concat(aux1, ignore_index=True)
-    # country_total.to_csv('csvs/NG/NGtotal.csv', index=False)
+    ##THIS PART IS TO COMBINE ALL COUNTRY REVIEWS in 1 single csv, repeated execution for the 5 countries
+    for source in sources:
+        for exchange in exchanges:
+            path = f"csvs/NG/{source}_{exchange}_NG_bert.csv"
+            df1 = pd.read_csv(path)
+            aux1.append(df1)
+    country_total = pd.concat(aux1, ignore_index=True)
+    country_total.to_csv('csvs/NG/NGtotal.csv', index=False)
     
 
     

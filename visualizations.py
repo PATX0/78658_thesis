@@ -166,7 +166,7 @@ def plot_sentiment_btc_year_month(sentiment_data, btc_data):
 
     plt.show()
 
-# Plot sentimnet avg and btc volume by month
+# Plot sentiment avg and btc volume by month
 def plot_sentiment_and_btc_volume(sentiment_data, btc_volume_data):
     fig, ax1 = plt.subplots(figsize=(12, 8))
     
@@ -304,6 +304,20 @@ def preprocess_and_decompose(df, title):
     plt.gcf().autofmt_xdate()  # Auto format x-axis dates to look better
     plt.show()
 
+# Plot violin sentiment distro
+def plot_violin_distribution(dfs, labels):
+    combined_df = pd.DataFrame()
+    for df, label in zip(dfs, labels):
+        df['label'] = label
+        combined_df = pd.concat([combined_df, df], axis=0)
+    
+    plt.figure(figsize=(12, 6))
+    sns.violinplot(x='label', y='sentiment', data=combined_df)
+    plt.title('Sentiment Score Distribution Across Exchanges and Countries')
+    plt.xlabel('Group')
+    plt.ylabel('Sentiment Scores')
+    plt.show()
+
 def main():
 # Preprocessing each DataFrame
     # Define custom colors for each exchange
@@ -347,11 +361,17 @@ def main():
         'UA': ua,
         'US': us
     }
+
+    df_countries = [brTotal, cnTotal, ngTotal, uaTotal, usTotal]
+    df_exchanges = [binancetotal, coinbasetotal, kucointotal]
+    labels_countries = ['BR', 'CN', 'NG', 'UA', 'US']
+    labels_exchanges = ['Binance', 'Coinbase', 'Kucoin']
+
     # time series decomposition binance
     preprocess_and_decompose(binancetotal, 'Binance Sentiment Decomposition')
-    # time series decomposition binance
+    # time series decomposition coinbase
     preprocess_and_decompose(coinbasetotal, 'Coinbase Sentiment Decomposition')
-    # time series decomposition binance
+    # time series decomposition kucoin
     preprocess_and_decompose(kucointotal, 'Kucoin Sentiment Decomposition')
 
     # boxplot sentiment 
@@ -379,6 +399,13 @@ def main():
 
     # Plot hit rate
     plot_hitrate_sentiment(binancetotal, coinbasetotal, kucointotal)
+
+    #plot violin exchanges
+    plot_violin_distribution(df_exchanges, labels_exchanges)
+
+    #plot violin countries
+    plot_violin_distribution(df_countries, labels_countries)
+
 
 # Execution starts here
 if __name__ == '__main__':

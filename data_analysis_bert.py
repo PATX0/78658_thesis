@@ -12,13 +12,6 @@ dfBA = pd.read_csv('csvs/appstore/appstore_binance_reviews_UA.csv')
 dfCA = pd.read_csv('csvs/appstore/appstore_coinbase_reviews_UA.csv')
 dfKA = pd.read_csv('csvs/appstore/appstore_kucoin_reviews_UA.csv')
 
-#df = dfCP.dropna(subset=['reviews'])
-#df = dfKP.dropna(subset=['reviews'])
-#df = dfBA.dropna(subset=['reviews'])
-#df = dfCA.dropna(subset=['reviews'])
-#df = dfKA.dropna(subset=['reviews'])
-
-
 
 
 #drops any entry that is empty and is not a string
@@ -57,10 +50,10 @@ sentiment_map = {
 df['sentiment'] = df['sentiment'].map(sentiment_map)
 
 
-# Save the results back to a new CSV
+# Repeated execution to have all the csvs.
 #df.to_csv('PS_Binance_CN_bert.csv', index=False)
 #df.to_csv('PS_Coinbase_CN_bert.csv', index=False)
-df.to_csv('PS_Coinbase_UA_bert.csv', index=False)
+#df.to_csv('PS_Coinbase_UA_bert.csv', index=False)
 
 
 

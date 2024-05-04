@@ -15,11 +15,11 @@ df_cleaned = df_cleaned.drop(columns=['isEdited','title','userName','developerRe
 
 # Given sentiment distribution
 sentiment_counts = {
-    "very_good": 0,
-    "good": 0,
-    "neutral": 0,
-    "bad": 0,
-    "very_bad": 0
+    "5": 0,
+    "4": 0,
+    "3": 0,
+    "2": 0,
+    "1": 0
 }
 
 # Initialize the VADER analyzer
@@ -31,20 +31,20 @@ df_cleaned['compound'] = df_cleaned['reviews'].apply(lambda x: analyzer.polarity
 # Categorize sentiments based on the compound score
 def categorize_sentiment(compound):
     if compound >= 0.5:
-        sentiment_counts['very_good'] += 1
-        return "very_good"
+        sentiment_counts['5'] += 1
+        return "5"
     elif compound >= 0.1:
-        sentiment_counts['good'] += 1
-        return "good"
+        sentiment_counts['4'] += 1
+        return "4"
     elif compound > -0.1:
-        sentiment_counts['neutral'] += 1
-        return "neutral"
+        sentiment_counts['3'] += 1
+        return "3"
     elif compound > -0.5:
-        sentiment_counts['bad'] += 1
-        return "bad"
+        sentiment_counts['2'] += 1
+        return "2"
     else:
-        sentiment_counts['very_bad'] += 1
-        return "very_bad"
+        sentiment_counts['1'] += 1
+        return "1"
 
 df_cleaned['sentiment'] = df_cleaned['compound'].apply(categorize_sentiment)
 
