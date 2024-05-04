@@ -62,6 +62,7 @@ btc = pd.read_csv('csvs/BTC_daily_pricevol.csv')
 
 palette = {'Binance': 'orange', 'Coinbase': 'blue', 'Kucoin': 'green',
             'BR': 'gold', 'CN': 'red', 'NG': 'darkgreen', 'UA': 'cyan', 'US': 'indigo' }
+
 # Groups the average sentiment by year
 def preprocess_sentiment_year(df):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -70,6 +71,16 @@ def preprocess_sentiment_year(df):
     df['year'] = df['timestamp'].dt.year
     df = df.groupby('year')['sentiment'].mean().reset_index()
     return df
+
+# Groups the average sentiment by month
+def preprocess_sentiment_month(df):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    # Filter the data to include only entries after 2017-01-01 (coinbase has)
+    df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
+    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month
+    monthly_avg = df.groupby('year_month')['sentiment'].mean().reset_index()
+    monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
+    return monthly_avg
 
 # Groups the average btc price by month
 def preprocess_btc_month(df):
@@ -86,13 +97,11 @@ def preprocess_btc_year(df):
     annual_avg = df.groupby('year')['price'].mean().reset_index()
     return annual_avg
 
-# Groups the average sentiment by month
-def preprocess_sentiment_month(df):
+# Groups the average btc volume by month
+def preprocess_btc_monthly_volume(df):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    # Filter the data to include only entries after 2017-01-01 (coinbase has)
-    df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
-    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month
-    monthly_avg = df.groupby('year_month')['sentiment'].mean().reset_index()
+    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month (!= .dt.month -> it would display the total avg by month from all years )
+    monthly_avg = df.groupby('year_month')['volume'].mean().reset_index()
     monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
     return monthly_avg
 
@@ -109,6 +118,7 @@ def plot_sentiment_trends(df_dict, title):
     plt.grid(True)
     plt.show()
 
+# Plot sentiment avg and btc price by year
 def plot_sentiment_btc_year(sentiment_data, btc_data):
     fig, ax1 = plt.subplots(figsize=(12, 8))
     
@@ -120,7 +130,7 @@ def plot_sentiment_btc_year(sentiment_data, btc_data):
     ax1.set_ylabel('Average Sentiment')
     ax1.legend(loc='upper left')
     ax1.grid(True)
-    ax1.set_title("Sentiment and BTC Price Trends Over Time")
+    ax1.set_title("Sentiment and BTC Price Trends Over Time  (yearly)")
 
     # Adjust Bitcoin plotting to match sentiment data years
     ax2 = ax1.twinx()
@@ -130,7 +140,7 @@ def plot_sentiment_btc_year(sentiment_data, btc_data):
 
     plt.show()
 
-
+# Plot sentiment avg and btc price by month 
 def plot_sentiment_btc_year_month(sentiment_data, btc_data):
     fig, ax1 = plt.subplots(figsize=(12, 8))
     
@@ -144,7 +154,7 @@ def plot_sentiment_btc_year_month(sentiment_data, btc_data):
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))  # Format ticks to display only the year
     ax1.legend(loc='upper left')
     ax1.grid(True)
-    ax1.set_title("Sentiment and BTC Price Trends Over Time")
+    ax1.set_title("Sentiment and BTC Price Trends Over Time (monthly)")
 
     # Adjust Bitcoin plotting to match sentiment data timing
     ax2 = ax1.twinx()
@@ -154,6 +164,30 @@ def plot_sentiment_btc_year_month(sentiment_data, btc_data):
 
     plt.show()
 
+# Plot sentimnet avg and btc volume by month
+def plot_sentiment_and_btc_volume(sentiment_data, btc_volume_data):
+    fig, ax1 = plt.subplots(figsize=(12, 8))
+    
+    # Plotting sentiment trends
+    for label, df in sentiment_data.items():
+        ax1.plot(df['year_month'], df['sentiment'], label=f"{label} Sentiment", marker='o', color=palette.get(label, 'gray'))
+
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('Average Sentiment')
+    ax1.xaxis.set_major_locator(mdates.YearLocator())  # Set major ticks to display only years
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))  # Format ticks to display only the year
+    ax1.legend(loc='upper left')
+    ax1.grid(True)
+    ax1.set_title("Sentiment and BTC Volume Trends Over Time")
+
+    # Adjust Bitcoin plotting to match sentiment data timing and use log scale
+    ax2 = ax1.twinx()
+    ax2.plot(btc_volume_data['year_month'], btc_volume_data['volume'], label='BTC Volume', color='black', marker='x', linestyle='--')
+    ax2.set_yscale('log')  # Using logarithmic scale
+    ax2.set_ylabel('BTC Average Trading Volume (Log Scale)')
+    ax2.legend(loc='upper right')
+
+    plt.show()
 # Function to plot sentiment trends using heatmaps
 def plot_heatmap(df_dict, x):
     # Transform dictionary of DataFrames into a single DataFrame for heatmap
@@ -237,6 +271,7 @@ def main():
     # Define custom colors for each exchange
     btc_data_y = preprocess_btc_year(btc)
     btc_data_m = preprocess_btc_month(btc)   
+    btc_volume = preprocess_btc_monthly_volume(btc)
 
     binancem = preprocess_sentiment_month(binancetotal)
     coinbasem = preprocess_sentiment_month(coinbasetotal)
@@ -276,21 +311,21 @@ def main():
     }
 
 
-    
-
-
     #Plot sentiment counts for all exchanges
     plot_sentiment_distribution(exchanges)
+
     # Plot sentiment trends over time for exchanges
     plot_sentiment_trends(exchange_data_y, 'Average Sentiment by Exchange')
     # Plot sentiment trends over time for countries
     plot_sentiment_trends(country_totals, 'Average Sentiment by Country')
 
-    #Plot sentiment trends by month and correlate with btc price  & volume
+    # Plot sentiment trends by month and correlate with btc price
     plot_sentiment_btc_year_month(exchange_data_m, btc_data_m)
-
-    #plot sentiment trend by year and btc price yearly
+    # plot sentiment trend by year and btc price yearly
     plot_sentiment_btc_year(exchange_data_y, btc_data_y)
+    # Plot trends
+    plot_sentiment_and_btc_volume(exchange_data_m, btc_volume)
+
     # Plot sentiment trends over time for exchanges with heatmap
     plot_heatmap(exchange_data_y, 'e')
     # Plot sentiment trends over time for countries with heatmap
