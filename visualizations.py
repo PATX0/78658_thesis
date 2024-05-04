@@ -1,7 +1,9 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
+from statsmodels.tsa.seasonal import seasonal_decompose
 
 ### APPSTORE REVIEWS HAVE A USER RATING, WE CAN COMPARE IT WITH THE SENTIMENT SCORE
 ### PLAYSTORE DOESNT HAVE IT
@@ -188,6 +190,7 @@ def plot_sentiment_and_btc_volume(sentiment_data, btc_volume_data):
     ax2.legend(loc='upper right')
 
     plt.show()
+
 # Function to plot sentiment trends using heatmaps
 def plot_heatmap(df_dict, x):
     # Transform dictionary of DataFrames into a single DataFrame for heatmap
@@ -245,7 +248,7 @@ def plot_hitrate_sentiment(b,c,k):
 
     plt.show()
 
-#function to plot sentiment distribution count
+# Function to plot sentiment distribution count
 def plot_sentiment_distribution(exchange_data):
     # Create an empty DataFrame to store all data
     combined_data = pd.DataFrame()
@@ -264,6 +267,41 @@ def plot_sentiment_distribution(exchange_data):
     plt.xlabel('Sentiment Score')
     plt.ylabel('Count')
     plt.legend(title='Exchange')
+    plt.show()
+
+# Function to boxplot sentiment distro
+def plot_boxplot_distribution(exchanges):
+    # Combine all dataframes into one with a new 'Group' column
+    combined_df = pd.DataFrame()
+    for label, df in exchanges.items():
+        df['Group'] = label
+        combined_df = pd.concat([combined_df, df], ignore_index=True)
+    
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(x='Group', y='sentiment',hue='Group', data=combined_df, palette=palette)
+    plt.title('Sentiment Score Distribution Across Exchanges')
+    plt.xlabel('Exchanges')
+    plt.ylabel('Sentiment Score')
+    plt.show()
+
+# plot time series decomposition
+def preprocess_and_decompose(df, title):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month
+    df = df.groupby('year_month')['sentiment'].mean().reset_index()
+    df['year_month'] = df['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
+    
+    # Ensure 'year_month' is datetime type and set as index
+    df.set_index('year_month', inplace=True)
+    
+    # Decomposition using the index as the time series x-axis
+    decomposition = seasonal_decompose(df['sentiment'], model='additive', period=12)
+    fig = decomposition.plot()
+    fig.suptitle(title, fontsize=16)
+    
+    # Enhance x-axis to display dates better
+    plt.gcf().autofmt_xdate()  # Auto format x-axis dates to look better
     plt.show()
 
 def main():
@@ -309,7 +347,15 @@ def main():
         'UA': ua,
         'US': us
     }
+    # time series decomposition binance
+    preprocess_and_decompose(binancetotal, 'Binance Sentiment Decomposition')
+    # time series decomposition binance
+    preprocess_and_decompose(coinbasetotal, 'Coinbase Sentiment Decomposition')
+    # time series decomposition binance
+    preprocess_and_decompose(kucointotal, 'Kucoin Sentiment Decomposition')
 
+    # boxplot sentiment 
+    plot_boxplot_distribution(exchange_data_m)
 
     #Plot sentiment counts for all exchanges
     plot_sentiment_distribution(exchanges)
