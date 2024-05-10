@@ -50,10 +50,8 @@ sentiment_map = {
 df['sentiment'] = df['sentiment'].map(sentiment_map)
 
 
-# Repeated execution to have all the csvs.
-#df.to_csv('PS_Binance_CN_bert.csv', index=False)
-#df.to_csv('PS_Coinbase_CN_bert.csv', index=False)
-#df.to_csv('PS_Coinbase_UA_bert.csv', index=False)
+df.to_csv('PS_Binance_CN_bert.csv', index=False)
+
 
 
 
