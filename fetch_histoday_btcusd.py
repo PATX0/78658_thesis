@@ -56,3 +56,52 @@ df.to_csv('btc_usd_ohlcv.csv', index=False)
 
 #run after the original BTC csv is 
 filter_BTC()
+
+#ETH HANDLING
+# Function to convert 'K' and 'M' in 'volume' to their full numeric values
+def convert_volume(volume):
+    # First, check if volume is a string; if not, it's likely NaN or already numeric
+    if isinstance(volume, str):
+        # Remove commas which might be used for thousands
+        volume = volume.replace(',', '')
+        # Check for 'K' or 'M' and convert accordingly
+        if 'K' in volume:
+            return round(float(volume.replace('K', '')) * 1000,2)
+        elif 'M' in volume:
+            return round(float(volume.replace('M', '')) * 1000000,2)
+        elif 'B' in volume:
+            return round(float(volume.replace('B', '')) * 1000000000,2)
+    # Handle non-string inputs gracefully; could be NaN or already a number
+    return volume
+
+
+
+#ETH HANDLING
+# Function to convert 'K' and 'M' in 'volume' to their full numeric values
+def convert_volume(volume):
+    # First, check if volume is a string; if not, it's likely NaN or already numeric
+    if isinstance(volume, str):
+        # Remove commas which might be used for thousands
+        volume = volume.replace(',', '')
+        # Check for 'K' or 'M' and convert accordingly
+        if 'K' in volume:
+            return round(float(volume.replace('K', '')) * 1000,2)
+        elif 'M' in volume:
+            return round(float(volume.replace('M', '')) * 1000000,2)
+        elif 'B' in volume:
+            return round(float(volume.replace('B', '')) * 1000000000,2)
+    # Handle non-string inputs gracefully; could be NaN or already a number
+    return volume
+
+
+eth = pd.read_csv('csvs/eth.csv')
+
+eth['timestamp'] = pd.to_datetime(eth['timestamp'])
+eth['price'] = eth['price'].replace(',', '', regex=True).astype(float)
+# Apply the function to the 'volume' column
+eth['volume'] = eth['volume'].apply(convert_volume)
+# Keep only the specified columns
+to_keep = ['timestamp', 'price', 'volume']
+new = eth[to_keep]
+new.to_csv('ETH_daily_pricevol.csv', index=False)
+    

@@ -61,6 +61,7 @@ coinbasetotal = pd.read_csv('csvs/coinbase/coinbaseTotal.csv')
 kucointotal = pd.read_csv('csvs/kucoin/kucoinTotal.csv')
 
 btc = pd.read_csv('csvs/BTC_daily_pricevol.csv')
+eth = pd.read_csv('csvs/ETH_daily_pricevol.csv')
 
 palette = {'Binance': 'orange', 'Coinbase': 'blue', 'Kucoin': 'green',
             'BR': 'gold', 'CN': 'red', 'NG': 'darkgreen', 'UA': 'cyan', 'US': 'indigo' }
@@ -190,6 +191,33 @@ def plot_sentiment_and_btc_volume(sentiment_data, btc_volume_data):
     ax2.legend(loc='upper right')
 
     plt.show()
+
+#ETH
+def plot_sentiment_eth_year_month(sentiment_data, eth_data):
+    fig, ax1 = plt.subplots(figsize=(12, 8))
+    
+    # Plotting sentiment trends
+    for label, df in sentiment_data.items():
+        ax1.plot(df['year_month'], df['sentiment'], label=f"{label} Sentiment", marker='o', color=palette.get(label, 'gray'))
+
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('Average Sentiment')
+    ax1.xaxis.set_major_locator(mdates.YearLocator())  # Set major ticks to display only years
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))  # Format ticks to display only the year
+    ax1.legend(loc='upper left')
+    ax1.grid(True)
+    ax1.set_title("Sentiment and eth Price Trends Over Time (monthly)")
+
+    # Adjust Bitcoin plotting to match sentiment data timing
+    ax2 = ax1.twinx()
+    ax2.plot(eth_data['year_month'], eth_data['price'], label='eth Price', color='black', marker='x', linestyle='--')
+    ax2.set_ylabel('eth Average Close Price (USD)')
+    ax2.legend(loc='upper right')
+
+    plt.show()
+
+
+
 
 # Function to plot sentiment trends using heatmaps
 def plot_heatmap(df_dict, x):
@@ -324,6 +352,7 @@ def main():
     btc_data_y = preprocess_btc_year(btc)
     btc_data_m = preprocess_btc_month(btc)   
     btc_volume = preprocess_btc_monthly_volume(btc)
+    eth_data_m = preprocess_btc_month(eth)
 
     binancem = preprocess_sentiment_month(binancetotal)
     coinbasem = preprocess_sentiment_month(coinbasetotal)
@@ -367,7 +396,7 @@ def main():
     labels_countries = ['BR', 'CN', 'NG', 'UA', 'US']
     labels_exchanges = ['Binance', 'Coinbase', 'Kucoin']
 
-    # time series decomposition binance
+    #time series decomposition binance
     preprocess_and_decompose(binancetotal, 'Binance Sentiment Decomposition')
     # time series decomposition coinbase
     preprocess_and_decompose(coinbasetotal, 'Coinbase Sentiment Decomposition')
@@ -391,6 +420,8 @@ def main():
     plot_sentiment_btc_year(exchange_data_y, btc_data_y)
     # Plot trends
     plot_sentiment_and_btc_volume(exchange_data_m, btc_volume)
+    #ETH 
+    plot_sentiment_eth_year_month(exchange_data_m, eth_data_m)
 
     # Plot sentiment trends over time for exchanges with heatmap
     plot_heatmap(exchange_data_y, 'e')
