@@ -5,50 +5,6 @@ import matplotlib.dates as mdates
 import seaborn as sns
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-### APPSTORE REVIEWS HAVE A USER RATING, WE CAN COMPARE IT WITH THE SENTIMENT SCORE
-### PLAYSTORE DOESNT HAVE IT
-
-#BINANCE EXCHANGE CSVS
-#playstore
-dbUSP = pd.read_csv('csvs/binance/PS_Binance_US_bert.csv')
-dbNGP = pd.read_csv('csvs/binance/PS_Binance_NG_bert.csv')
-dbUAP = pd.read_csv('csvs/binance/PS_Binance_UA_bert.csv')
-dbCNP = pd.read_csv('csvs/binance/PS_Binance_CN_bert.csv')
-dbBRP = pd.read_csv('csvs/binance/PS_Binance_BR_bert.csv')
-#appstore
-dbUSA = pd.read_csv('csvs/binance/AS_Binance_US_bert.csv')
-dbNGA = pd.read_csv('csvs/binance/AS_Binance_NG_bert.csv')
-dbUAA = pd.read_csv('csvs/binance/AS_Binance_UA_bert.csv')
-dbCNA = pd.read_csv('csvs/binance/AS_Binance_CN_bert.csv')
-dbBRA = pd.read_csv('csvs/binance/AS_Binance_BR_bert.csv')
-
-#COINBASE
-#playstore
-dcUSP = pd.read_csv('csvs/coinbase/PS_Coinbase_US_bert.csv')
-dcNGP = pd.read_csv('csvs/coinbase/PS_Coinbase_NG_bert.csv')
-dcUAP = pd.read_csv('csvs/coinbase/PS_Coinbase_UA_bert.csv')
-dcCNP = pd.read_csv('csvs/coinbase/PS_Coinbase_CN_bert.csv')
-dcBRP = pd.read_csv('csvs/coinbase/PS_Coinbase_BR_bert.csv')
-#appstore
-dcUSA = pd.read_csv('csvs/coinbase/AS_Coinbase_US_bert.csv')
-dcNGA = pd.read_csv('csvs/coinbase/AS_Coinbase_NG_bert.csv')
-dcUAA = pd.read_csv('csvs/coinbase/AS_Coinbase_UA_bert.csv')
-dcCNA = pd.read_csv('csvs/coinbase/AS_Coinbase_CN_bert.csv')
-dcBRA = pd.read_csv('csvs/coinbase/AS_Coinbase_BR_bert.csv')
-
-#KUCOIN
-#playstore
-dkUSP = pd.read_csv('csvs/kucoin/PS_Kucoin_US_bert.csv')
-dkNGP = pd.read_csv('csvs/kucoin/PS_Kucoin_NG_bert.csv')
-dkUAP = pd.read_csv('csvs/kucoin/PS_Kucoin_UA_bert.csv')
-dkCNP = pd.read_csv('csvs/kucoin/PS_Kucoin_CN_bert.csv')
-dkBRP = pd.read_csv('csvs/kucoin/PS_Kucoin_BR_bert.csv')
-#appstore
-dkUSA = pd.read_csv('csvs/kucoin/AS_Kucoin_US_bert.csv')
-dkNGA = pd.read_csv('csvs/kucoin/AS_Kucoin_NG_bert.csv')
-dkUAA = pd.read_csv('csvs/kucoin/AS_Kucoin_UA_bert.csv')
-dkCNA = pd.read_csv('csvs/kucoin/AS_Kucoin_CN_bert.csv')
-dkBRA = pd.read_csv('csvs/kucoin/AS_Kucoin_BR_bert.csv')
 
 brTotal = pd.read_csv('csvs/BR/BRtotal.csv')
 cnTotal = pd.read_csv('csvs/CN/CNtotal.csv')
@@ -66,47 +22,48 @@ eth = pd.read_csv('csvs/ETH_daily_pricevol.csv')
 palette = {'Binance': 'orange', 'Coinbase': 'blue', 'Kucoin': 'green',
             'BR': 'gold', 'CN': 'red', 'NG': 'darkgreen', 'UA': 'cyan', 'US': 'indigo' }
 
-# Groups the average sentiment by year
-def preprocess_sentiment_year(df):
+
+def preprocess_sentiment(df, period):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    # Filter the data to include only entries after 2017-01-01 (coinbase has)
+    # Filter the data to include only entries after 2017-01-01
     df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
-    df['year'] = df['timestamp'].dt.year
-    df = df.groupby('year')['sentiment'].mean().reset_index()
-    return df
 
-# Groups the average sentiment by month
-def preprocess_sentiment_month(df):
+    if period == 'year':
+        df['year'] = df['timestamp'].dt.year
+        return df.groupby('year')['sentiment'].mean().reset_index()
+    elif period == 'month':
+        df['year_month'] = df['timestamp'].dt.to_period('M')
+        monthly_avg = df.groupby('year_month')['sentiment'].mean().reset_index()
+        monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()
+        return monthly_avg
+
+def preprocess_price(df, period):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    # Filter the data to include only entries after 2017-01-01 (coinbase has)
     df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
-    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month
-    monthly_avg = df.groupby('year_month')['sentiment'].mean().reset_index()
-    monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
-    return monthly_avg
 
-# Groups the average btc price by month
-def preprocess_btc_month(df):
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month
-    monthly_avg = df.groupby('year_month')['price'].mean().reset_index()
-    monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
-    return monthly_avg
-
-# Groups the average btc price by year
-def preprocess_btc_year(df):
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['year'] = df['timestamp'].dt.year  # Extracting year as an integer
-    annual_avg = df.groupby('year')['price'].mean().reset_index()
-    return annual_avg
+    if period == 'year':
+        df['year'] = df['timestamp'].dt.year
+        return df.groupby('year')['price'].mean().reset_index()
+    elif period == 'month':
+        df['year_month'] = df['timestamp'].dt.to_period('M')
+        monthly_avg = df.groupby('year_month')['price'].mean().reset_index()
+        monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()
+        return monthly_avg
 
 # Groups the average btc volume by month
-def preprocess_btc_monthly_volume(df):
+def preprocess_volume(df,period):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month (!= .dt.month -> it would display the total avg by month from all years )
-    monthly_avg = df.groupby('year_month')['volume'].mean().reset_index()
-    monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
-    return monthly_avg
+    df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
+
+    if period == 'year': 
+        df['year'] = df['timestamp'].dt.year
+        return df.groupby('year')['price'].mean().reset_index()
+    elif period == 'month':
+        df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month (!= .dt.month -> it would display the total avg by month from all years )
+        monthly_avg = df.groupby('year_month')['volume'].mean().reset_index()
+        monthly_avg['year_month'] = monthly_avg['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
+        return monthly_avg
+
 
 # Function to plot sentiment trends
 def plot_sentiment_trends(df_dict, title):
@@ -277,7 +234,7 @@ def plot_hitrate_sentiment(b,c,k):
     plt.show()
 
 # Function to plot sentiment distribution count
-def plot_sentiment_distribution(exchange_data):
+def plot_sentiment_frequency(exchange_data):
     # Create an empty DataFrame to store all data
     combined_data = pd.DataFrame()
 
@@ -290,11 +247,17 @@ def plot_sentiment_distribution(exchange_data):
 
     # Plotting the sentiment score distribution using count plot
     plt.figure(figsize=(12, 6))
-    sns.countplot(x='sentiment', hue='Exchange', data=combined_data, palette=palette)
+    ax = sns.countplot(x='sentiment', hue='Exchange', data=combined_data, palette=palette)
     plt.title('Sentiment Score Distribution Across Exchanges')
     plt.xlabel('Sentiment Score')
     plt.ylabel('Count')
     plt.legend(title='Exchange')
+     # Annotate the exact counts above the bars
+    for p in ax.patches:
+        ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), 
+                    ha='center', va='center', fontsize=11, color='black', xytext=(0, 5),
+                    textcoords='offset points')
+    
     plt.show()
 
 # Function to boxplot sentiment distro
@@ -316,10 +279,11 @@ def plot_boxplot_distribution(exchanges):
 # plot time series decomposition
 def preprocess_and_decompose(df, title):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
     df['year_month'] = df['timestamp'].dt.to_period('M')  # Grouping by year and month
     df = df.groupby('year_month')['sentiment'].mean().reset_index()
     df['year_month'] = df['year_month'].dt.to_timestamp()  # Converting to timestamp for plotting
-    
+
     # Ensure 'year_month' is datetime type and set as index
     df.set_index('year_month', inplace=True)
     
@@ -346,32 +310,54 @@ def plot_violin_distribution(dfs, labels):
     plt.ylabel('Sentiment Scores')
     plt.show()
 
+
+
+def preprocess_2017(df):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
+    return df
+
 def main():
 # Preprocessing each DataFrame
     # Define custom colors for each exchange
-    btc_data_y = preprocess_btc_year(btc)
-    btc_data_m = preprocess_btc_month(btc)   
-    btc_volume = preprocess_btc_monthly_volume(btc)
-    eth_data_m = preprocess_btc_month(eth)
+    btc_data_y = preprocess_price(btc,'year')
+    btc_data_m = preprocess_price(btc,'month')   
+    btc_volume = preprocess_volume(btc,'month')
+    eth_data_m = preprocess_price(eth,'month')
+    eth_data_y = preprocess_price(eth, 'year')
 
-    binancem = preprocess_sentiment_month(binancetotal)
-    coinbasem = preprocess_sentiment_month(coinbasetotal)
-    kucoinm = preprocess_sentiment_month(kucointotal)
+    binancem = preprocess_sentiment(binancetotal,'month')
+    coinbasem = preprocess_sentiment(coinbasetotal,'month')
+    kucoinm = preprocess_sentiment(kucointotal,'month')
 
-    binance = preprocess_sentiment_year(binancetotal)
-    coinbase = preprocess_sentiment_year(coinbasetotal)
-    kucoin = preprocess_sentiment_year(kucointotal)
+    binancey = preprocess_sentiment(binancetotal,'year')
+    coinbasey = preprocess_sentiment(coinbasetotal,'year')
+    kucoiny = preprocess_sentiment(kucointotal,'year')
 
-    br = preprocess_sentiment_year(brTotal)
-    cn  = preprocess_sentiment_year(cnTotal)
-    ng = preprocess_sentiment_year(ngTotal)
-    ua = preprocess_sentiment_year(uaTotal)
-    us = preprocess_sentiment_year(usTotal)
+    br = preprocess_sentiment(brTotal,'year')
+    cn  = preprocess_sentiment(cnTotal,'year')
+    ng = preprocess_sentiment(ngTotal,'year')
+    ua = preprocess_sentiment(uaTotal,'year')
+    us = preprocess_sentiment(usTotal,'year')
+    
+    br_17 = preprocess_2017(brTotal)
+    cn_17 = preprocess_2017(cnTotal)
+    ng_17 = preprocess_2017(ngTotal)
+    ua_17 = preprocess_2017(uaTotal)
+    us_17 = preprocess_2017(usTotal)
+
+    countries_17 = {
+        'BR': br_17,
+        'CN': cn_17,
+        'NG': ng_17,
+        'UA': ua_17,
+        'US': us_17
+    }
     # Gather the data
-    exchange_data_y = {
-        'Binance': binance,
-        'Coinbase': coinbase,
-        'Kucoin': kucoin
+    exchange_data_grouped = {
+        'Binance': binancey,
+        'Coinbase': coinbasey,
+        'Kucoin': kucoiny
     }
     exchange_data_m = {
         'Binance': binancem,
@@ -379,9 +365,9 @@ def main():
         'Kucoin': kucoinm
     }
     exchanges = {
-        'Binance': binancetotal,
-        'Coinbase': coinbasetotal,
-        'Kucoin': kucointotal
+        'Binance':  preprocess_2017(binancetotal),
+        'Coinbase':  preprocess_2017(coinbasetotal),
+        'Kucoin':  preprocess_2017(kucointotal)
     }
     country_totals = {
         'BR': br,
@@ -397,45 +383,50 @@ def main():
     labels_exchanges = ['Binance', 'Coinbase', 'Kucoin']
 
     #time series decomposition binance
-    preprocess_and_decompose(binancetotal, 'Binance Sentiment Decomposition')
+    #preprocess_and_decompose(binancetotal, 'Binance Sentiment Decomposition')
+
     # time series decomposition coinbase
-    preprocess_and_decompose(coinbasetotal, 'Coinbase Sentiment Decomposition')
+    #preprocess_and_decompose(coinbasetotal, 'Coinbase Sentiment Decomposition')
+
     # time series decomposition kucoin
-    preprocess_and_decompose(kucointotal, 'Kucoin Sentiment Decomposition')
+    #preprocess_and_decompose(kucointotal, 'Kucoin Sentiment Decomposition')
 
     # boxplot sentiment 
-    plot_boxplot_distribution(exchange_data_m)
+    #plot_boxplot_distribution(exchange_data_m)
 
     #Plot sentiment counts for all exchanges
-    plot_sentiment_distribution(exchanges)
+    
+    plot_sentiment_frequency(exchanges)
+
+    plot_sentiment_frequency(countries_17)
 
     # Plot sentiment trends over time for exchanges
-    plot_sentiment_trends(exchange_data_y, 'Average Sentiment by Exchange')
+    plot_sentiment_trends(exchange_data_grouped, 'Average Sentiment by Exchange')
     # Plot sentiment trends over time for countries
     plot_sentiment_trends(country_totals, 'Average Sentiment by Country')
 
     # Plot sentiment trends by month and correlate with btc price
     plot_sentiment_btc_year_month(exchange_data_m, btc_data_m)
     # plot sentiment trend by year and btc price yearly
-    plot_sentiment_btc_year(exchange_data_y, btc_data_y)
+    plot_sentiment_btc_year(exchange_data_grouped, btc_data_y)
     # Plot trends
     plot_sentiment_and_btc_volume(exchange_data_m, btc_volume)
     #ETH 
     plot_sentiment_eth_year_month(exchange_data_m, eth_data_m)
 
     # Plot sentiment trends over time for exchanges with heatmap
-    plot_heatmap(exchange_data_y, 'e')
+    #plot_heatmap(exchange_data_grouped, 'e')
     # Plot sentiment trends over time for countries with heatmap
-    plot_heatmap(country_totals, 'c')     
+    #plot_heatmap(country_totals, 'c')     
 
     # Plot hit rate
     plot_hitrate_sentiment(binancetotal, coinbasetotal, kucointotal)
 
     #plot violin exchanges
-    plot_violin_distribution(df_exchanges, labels_exchanges)
+    #plot_violin_distribution(df_exchanges, labels_exchanges)
 
     #plot violin countries
-    plot_violin_distribution(df_countries, labels_countries)
+    #plot_violin_distribution(df_countries, labels_countries)
 
 
 # Execution starts here
