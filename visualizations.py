@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
 from statsmodels.tsa.seasonal import seasonal_decompose
-
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 
 brTotal = pd.read_csv('csvs/BR/BRtotal.csv')
 cnTotal = pd.read_csv('csvs/CN/CNtotal.csv')
@@ -102,26 +102,30 @@ def plot_sentiment_btc_year(sentiment_data, btc_data):
 
 # Plot sentiment avg and btc price by month 
 def plot_sentiment_btc_year_month(sentiment_data, btc_data):
-    fig, ax1 = plt.subplots(figsize=(12, 8))
+    fig, ax1 = plt.subplots(figsize=(16, 10))
     
     # Plotting sentiment trends
     for label, df in sentiment_data.items():
         ax1.plot(df['year_month'], df['sentiment'], label=f"{label} Sentiment", marker='o', color=palette.get(label, 'gray'))
 
-    ax1.set_xlabel('Year')
-    ax1.set_ylabel('Average Sentiment')
+    ax1.set_xlabel('Year', fontsize=14)
+    ax1.set_ylabel('Average Sentiment', fontsize=14)
     ax1.xaxis.set_major_locator(mdates.YearLocator())  # Set major ticks to display only years
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))  # Format ticks to display only the year
-    ax1.legend(loc='upper left')
+    ax1.tick_params(axis='x', rotation=45, labelsize=12)  # Rotate x-axis labels and set font size
+    ax1.tick_params(axis='y', labelsize=12)  # Set y-axis font size
+    ax1.legend(loc='upper left', fontsize=12, title='Sentiment', title_fontsize='13')
     ax1.grid(True)
-    ax1.set_title("Sentiment and BTC Price Trends Over Time (monthly)")
+    ax1.set_title("Sentiment and BTC Price Trends Over Time (monthly)", fontsize=16)
 
     # Adjust Bitcoin plotting to match sentiment data timing
     ax2 = ax1.twinx()
     ax2.plot(btc_data['year_month'], btc_data['price'], label='BTC Price', color='black', marker='x', linestyle='--')
-    ax2.set_ylabel('BTC Average Close Price (USD)')
-    ax2.legend(loc='upper right')
+    ax2.set_ylabel('BTC Average Close Price (USD)', fontsize=14)
+    ax2.tick_params(axis='y', labelsize=12)  # Set y-axis font size for BTC price
+    ax2.legend(loc='upper right', fontsize=12, title='BTC', title_fontsize='13')
 
+    plt.tight_layout()  # Adjust layout to fit everything nicely
     plt.show()
 
 # Plot sentiment avg and btc volume by month
@@ -172,9 +176,6 @@ def plot_sentiment_eth_year_month(sentiment_data, eth_data):
     ax2.legend(loc='upper right')
 
     plt.show()
-
-
-
 
 # Function to plot sentiment trends using heatmaps
 def plot_heatmap(df_dict, x):
@@ -248,10 +249,10 @@ def plot_sentiment_frequency(exchange_data):
     # Plotting the sentiment score distribution using count plot
     plt.figure(figsize=(12, 6))
     ax = sns.countplot(x='sentiment', hue='Exchange', data=combined_data, palette=palette)
-    plt.title('Sentiment Score Distribution Across Exchanges')
+    plt.title('Sentiment Score Distribution Across Countries')
     plt.xlabel('Sentiment Score')
     plt.ylabel('Count')
-    plt.legend(title='Exchange')
+    plt.legend(title='Country')
      # Annotate the exact counts above the bars
     for p in ax.patches:
         ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), 
@@ -271,8 +272,8 @@ def plot_boxplot_distribution(exchanges):
     # Plotting
     plt.figure(figsize=(10, 6))
     sns.boxplot(x='Group', y='sentiment',hue='Group', data=combined_df, palette=palette)
-    plt.title('Sentiment Score Distribution Across Exchanges')
-    plt.xlabel('Exchanges')
+    plt.title('Sentiment Score Distribution Across Countries')
+    plt.xlabel('Countries')
     plt.ylabel('Sentiment Score')
     plt.show()
 
@@ -310,8 +311,101 @@ def plot_violin_distribution(dfs, labels):
     plt.ylabel('Sentiment Scores')
     plt.show()
 
+def calculate_confusion_matrix(exchanges_data):
+    """
+    Calculate the confusion matrix for each exchange.
+
+    Parameters:
+    exchanges_data (dict): Dictionary containing dataframes for each exchange
+
+    Returns:
+    dict: Confusion matrices for each exchange
+    """
+    confusion_matrices = {}
+    for exchange, df in exchanges_data.items():
+        # Filter out rows where 'rating' is null
+        df_filtered = df.dropna(subset=['rating'])
+        y_true = df_filtered['rating']
+        y_pred = df_filtered['sentiment']
+        cm = confusion_matrix(y_true, y_pred, labels=[1, 2, 3, 4, 5])
+        confusion_matrices[exchange] = cm
+    return confusion_matrices
+
+def plot_confusion_matrices(confusion_matrices):
+    for exchange, cm in confusion_matrices.items():
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False,
+                    xticklabels=[1, 2, 3, 4, 5], yticklabels=[1, 2, 3, 4, 5])
+        plt.xlabel('Predicted Label')
+        plt.ylabel('True Label')
+        plt.title(f'Confusion Matrix for {exchange}')
+        plt.show()
+
+def calculate_metrics(exchanges_data):
+    """
+    Calculate Accuracy, Precision, Recall, and F1-Score for each exchange.
+
+    Parameters:
+    exchanges_data (dict): Dictionary containing dataframes for each exchange
+
+    Returns:
+    dict: Dictionary containing the metrics for each exchange
+    """
+    metrics = {}
+    for exchange, df in exchanges_data.items():
+        # Filter out rows where 'rating' is null
+        df_filtered = df.dropna(subset=['rating'])
+        y_true = df_filtered['rating']
+        y_pred = df_filtered['sentiment']
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred, average='weighted')
+        recall = recall_score(y_true, y_pred, average='weighted')
+        f1 = f1_score(y_true, y_pred, average='weighted')
+        metrics[exchange] = {
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1
+        }
+    return metrics
+
+def plot_metrics(metrics):
+    metrics_df = pd.DataFrame(metrics).T  # Transpose the metrics dictionary to a DataFrame
+    metrics_df.plot(kind='bar', figsize=(12, 8))
+    plt.title('Performance Metrics by Exchange')
+    plt.xlabel('Exchange')
+    plt.ylabel('Score')
+    plt.xticks(rotation=0)
+    plt.legend(title='Metrics')
+    plt.grid(axis='y')
+    plt.show()
 
 
+def plot_rating_vs_sentiment(exchanges_data):
+    for exchange, df in exchanges_data.items():
+        df_filtered = df.dropna(subset=['rating'])
+        plt.figure(figsize=(14, 7))
+        
+        # Plot histogram for ratings
+        plt.subplot(1, 2, 1)
+        sns.histplot(df_filtered['rating'], bins=5, kde=True)
+        plt.title(f'{exchange} User Ratings Distribution')
+        plt.xlabel('User Rating')
+        plt.ylabel('Frequency')
+        
+        # Plot histogram for sentiment scores
+        plt.subplot(1, 2, 2)
+        sns.histplot(df_filtered['sentiment'], bins=5, kde=True)
+        plt.title(f'{exchange} Sentiment Scores Distribution')
+        plt.xlabel('Sentiment Score')
+        plt.ylabel('Frequency')
+        
+        plt.suptitle(f'{exchange} Ratings vs Sentiment Scores')
+        plt.tight_layout()
+        plt.show()
+
+
+#preprocess timestamp >2017
 def preprocess_2017(df):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df = df[df['timestamp'] > pd.Timestamp('2017-01-01')]
@@ -326,19 +420,29 @@ def main():
     eth_data_m = preprocess_price(eth,'month')
     eth_data_y = preprocess_price(eth, 'year')
 
+    #exchanges monthly
     binancem = preprocess_sentiment(binancetotal,'month')
     coinbasem = preprocess_sentiment(coinbasetotal,'month')
     kucoinm = preprocess_sentiment(kucointotal,'month')
 
+    #exchanges yearly
     binancey = preprocess_sentiment(binancetotal,'year')
     coinbasey = preprocess_sentiment(coinbasetotal,'year')
     kucoiny = preprocess_sentiment(kucointotal,'year')
-
+    
+    #countries yearly
     br = preprocess_sentiment(brTotal,'year')
     cn  = preprocess_sentiment(cnTotal,'year')
     ng = preprocess_sentiment(ngTotal,'year')
     ua = preprocess_sentiment(uaTotal,'year')
     us = preprocess_sentiment(usTotal,'year')
+
+    #countries monthly
+    brm = preprocess_sentiment(brTotal,'month')
+    cnm  = preprocess_sentiment(cnTotal,'month')
+    ngm = preprocess_sentiment(ngTotal,'month')
+    uam = preprocess_sentiment(uaTotal,'month')
+    usm = preprocess_sentiment(usTotal,'month')
     
     br_17 = preprocess_2017(brTotal)
     cn_17 = preprocess_2017(cnTotal)
@@ -354,7 +458,7 @@ def main():
         'US': us_17
     }
     # Gather the data
-    exchange_data_grouped = {
+    exchanges_data_y = {
         'Binance': binancey,
         'Coinbase': coinbasey,
         'Kucoin': kucoiny
@@ -376,6 +480,13 @@ def main():
         'UA': ua,
         'US': us
     }
+    countries_m = {
+        'BR': brm,
+        'CN': cnm,
+        'NG': ngm,
+        'UA': uam,
+        'US': usm
+    }    
 
     df_countries = [brTotal, cnTotal, ngTotal, uaTotal, usTotal]
     df_exchanges = [binancetotal, coinbasetotal, kucointotal]
@@ -391,36 +502,69 @@ def main():
     # time series decomposition kucoin
     #preprocess_and_decompose(kucointotal, 'Kucoin Sentiment Decomposition')
 
-    # boxplot sentiment 
+    #     # time series decomposition Brazil
+    # preprocess_and_decompose(brTotal, 'Brazil Sentiment Decomposition')
+    #     # time series decomposition China
+    # preprocess_and_decompose(cnTotal, 'China Sentiment Decomposition')
+    #     # time series decomposition Nigeria
+    # preprocess_and_decompose(ngTotal, 'Nigeria Sentiment Decomposition')
+    #     # time series decomposition Ukraine
+    # preprocess_and_decompose(uaTotal, 'Ukraine Sentiment Decomposition')
+    #     # time series decomposition US
+    # preprocess_and_decompose(usTotal, 'United States Sentiment Decomposition')
+
+    # boxplot sentiment exchanges
     #plot_boxplot_distribution(exchange_data_m)
+    # boxplot sentiment countries
+    plot_boxplot_distribution(countries_m)
+
 
     #Plot sentiment counts for all exchanges
     
-    plot_sentiment_frequency(exchanges)
+    #plot_sentiment_frequency(exchanges)
 
     plot_sentiment_frequency(countries_17)
 
-    # Plot sentiment trends over time for exchanges
-    plot_sentiment_trends(exchange_data_grouped, 'Average Sentiment by Exchange')
-    # Plot sentiment trends over time for countries
-    plot_sentiment_trends(country_totals, 'Average Sentiment by Country')
+    # Plot sentiment trends over time for exchanges yearly
+    #plot_sentiment_trends(exchanges_data_y, 'Average Sentiment by Exchange')
+    # Plot sentiment trends over time for countries yearly
+    #plot_sentiment_trends(country_totals, 'Average Sentiment by Country')
 
-    # Plot sentiment trends by month and correlate with btc price
-    plot_sentiment_btc_year_month(exchange_data_m, btc_data_m)
+
+    # Plot trends exchanges vs btc monthly
+    #plot_sentiment_btc_year_month(exchange_data_m, btc_data_m)
+    # Plot trends countries vs btc monthly
+    #plot_sentiment_btc_year_month(countries_m, btc_data_m)
+
     # plot sentiment trend by year and btc price yearly
-    plot_sentiment_btc_year(exchange_data_grouped, btc_data_y)
-    # Plot trends
-    plot_sentiment_and_btc_volume(exchange_data_m, btc_volume)
+    #plot_sentiment_btc_year(exchanges_data_y, btc_data_y)
+        # plot sentiment trend by year and btc price yearly
+    #plot_sentiment_btc_year(country_totals, btc_data_y)
+
+    # Plot trends exchange vs volume
+    #plot_sentiment_and_btc_volume(exchange_data_m, btc_volume)
+
+
     #ETH 
-    plot_sentiment_eth_year_month(exchange_data_m, eth_data_m)
+    #plot_sentiment_eth_year_month(exchange_data_m, eth_data_m)
 
     # Plot sentiment trends over time for exchanges with heatmap
-    #plot_heatmap(exchange_data_grouped, 'e')
+    #plot_heatmap(exchanges_data_y, 'e')
     # Plot sentiment trends over time for countries with heatmap
     #plot_heatmap(country_totals, 'c')     
 
     # Plot hit rate
-    plot_hitrate_sentiment(binancetotal, coinbasetotal, kucointotal)
+   # plot_hitrate_sentiment(binancetotal, coinbasetotal, kucointotal)
+
+    # Calculate confusion matrices
+    #confusion_matrices = calculate_confusion_matrix(exchanges)
+    #plot_confusion_matrices(confusion_matrices)
+
+    # Calculate metrics
+    #metrics = calculate_metrics(exchanges)
+    #plot_metrics(metrics)
+
+    #plot_rating_vs_sentiment(exchanges)
 
     #plot violin exchanges
     #plot_violin_distribution(df_exchanges, labels_exchanges)
